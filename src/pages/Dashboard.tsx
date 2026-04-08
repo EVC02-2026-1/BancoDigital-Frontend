@@ -1,63 +1,110 @@
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ArrowUpRight, CreditCard, Home, LogOut, Receipt, Settings, TrendingUp, User, Wallet, Plus, Globe, Landmark, Coins, Trash2, RefreshCcw } from 'lucide-react';
 import api from '../api/api';
 import VirtualCard from '../components/VirtualCard';
 
 interface DashboardProps {
-    user: any;
+    user?: DashboardUser;
     onLogout: () => void;
-    onNavigate: (view: any) => void;
+    onNavigate: (view: DashboardView) => void;
+}
+
+type DashboardView = 'DASHBOARD' | 'TRANSFERS' | 'MOVEMENTS';
+
+interface DashboardUser {
+    name?: string;
+    selfie?: string;
+}
+
+interface BankAccount {
+    id: number;
+    type: string;
+    accountNumber: string;
+    balance?: number;
+}
+
+interface ExternalAccount {
+    id: number;
+    bankName: string;
+    accountNumber: string;
+    holderName: string;
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }): React.ReactElement => {
-    const [accounts, setAccounts] = useState<any[]>([]);
-    const [externalAccounts, setExternalAccounts] = useState<any[]>([]);
-    const [selectedAccount, setSelectedAccount] = useState<any>(null);
+    const [accounts, setAccounts] = useState<BankAccount[]>([]);
+    const [externalAccounts, setExternalAccounts] = useState<ExternalAccount[]>([]);
+    const [selectedAccount, setSelectedAccount] = useState<BankAccount | null>(null);
     const [showCard, setShowCard] = useState(false);
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [showLinkModal, setShowLinkModal] = useState(false);
     const [newAccountType, setNewAccountType] = useState('SAVINGS');
     const [linkData, setLinkData] = useState({ bankName: '', accountNumber: '', holderName: '' });
     const [showBalances, setShowBalances] = useState<Record<number, boolean>>({});
-    const [loading, setLoading] = useState(true);
+    const [initialLoading, setInitialLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
-    const [accountToDelete, setAccountToDelete] = useState<any>(null);
+    const [accountToDelete, setAccountToDelete] = useState<ExternalAccount | null>(null);
+    const isFetchingRef = useRef(false);
+    const hasLoadedRef = useRef(false);
+    const isMountedRef = useRef(false);
 
     const selfieUrl = user?.selfie ? `http://localhost:8081/uploads/${encodeURIComponent(user.selfie)}` : null;
 
-    const fetchData = async () => {
-        setLoading(true);
+    const fetchData = useCallback(async ({ silent = false }: { silent?: boolean } = {}) => {
+        if (isFetchingRef.current) {
+            return;
+        }
+
+        isFetchingRef.current = true;
+
+        if (hasLoadedRef.current && !silent) {
+            setRefreshing(true);
+        }
+
         try {
             const [accRes, extRes] = await Promise.all([
-                api.get('/accounts/me'),
-                api.get('/external-accounts')
+                api.get<BankAccount[]>('/accounts/me'),
+                api.get<ExternalAccount[]>('/external-accounts')
             ]);
+
+            if (!isMountedRef.current) {
+                return;
+            }
+
             setAccounts(accRes.data);
             setExternalAccounts(extRes.data);
         } catch (err) {
             console.error("Error fetching data", err);
         } finally {
-            setLoading(false);
+            isFetchingRef.current = false;
+
+            if (isMountedRef.current) {
+                hasLoadedRef.current = true;
+                setInitialLoading(false);
+                setRefreshing(false);
+            }
         }
-    };
+    }, []);
 
     const formatAccountNumber = (num: string) => {
         return num.replace(/(\d{4})/g, '$1 ').trim();
     };
 
     useEffect(() => {
-        fetchData();
-        // Polling para mantener saldos actualizados ante cambios externos (terminal, etc)
-        const interval = setInterval(fetchData, 10000);
-        return () => clearInterval(interval);
-    }, []);
+        isMountedRef.current = true;
+        void fetchData();
+
+        return () => {
+            isMountedRef.current = false;
+        };
+    }, [fetchData]);
 
     const handleCreateAccount = async () => {
         try {
             await api.post('/accounts/create', { type: newAccountType });
             setShowCreateModal(false);
-            fetchData();
-        } catch (err) {
+            void fetchData({ silent: true });
+        } catch {
             alert("Error al crear la cuenta");
         }
     };
@@ -71,14 +118,14 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }): Re
             await api.post('/external-accounts', linkData);
             setShowLinkModal(false);
             setLinkData({ bankName: '', accountNumber: '', holderName: '' });
-            fetchData();
+            void fetchData({ silent: true });
             alert("Banco vinculado con éxito");
-        } catch (err) {
+        } catch {
             alert("Error al vincular el banco");
         }
     };
 
-    const handleDeleteExternal = (account: any) => {
+    const handleDeleteExternal = (account: ExternalAccount) => {
         setAccountToDelete(account);
         setShowDeleteModal(true);
     };
@@ -89,9 +136,9 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }): Re
             await api.delete(`/external-accounts/${accountToDelete.id}`);
             setShowDeleteModal(false);
             setAccountToDelete(null);
-            fetchData();
+            void fetchData({ silent: true });
             // Optional: Success toast could go here
-        } catch (err) {
+        } catch {
             alert("Error al eliminar la cuenta");
         }
     };
@@ -176,11 +223,11 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }): Re
                             <p className="text-slate-400 text-lg font-medium">Gestiona tus finanzas y expande tu capital hoy.</p>
                         </div>
                         <button 
-                            onClick={fetchData}
+                            onClick={() => void fetchData()}
                             className="p-5 bg-white rounded-3xl shadow-sm border border-slate-100 text-slate-400 hover:text-blue-600 hover:shadow-lg transition-all group"
                             title="Actualizar saldos"
                         >
-                            <RefreshCcw className={`w-6 h-6 group-hover:rotate-180 transition-all duration-500 ${loading ? 'animate-spin' : ''}`} />
+                            <RefreshCcw className={`w-6 h-6 group-hover:rotate-180 transition-all duration-500 ${refreshing ? 'animate-spin' : ''}`} />
                         </button>
                     </div>
 
@@ -218,7 +265,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }): Re
                             <h2 className="text-xl font-black text-slate-900 italic uppercase">Mis Cuentas</h2>
                             <span className="text-xs bg-slate-100 text-slate-400 px-3 py-1 rounded-full font-bold uppercase tracking-widest">{accounts.length} Activas</span>
                         </div>
-                        {loading ? (
+                        {initialLoading ? (
                             <div className="text-center py-10 text-slate-400 font-bold animate-pulse italic">Sincronizando cuentas...</div>
                         ) : accounts.length === 0 ? (
                             <div className="bg-white p-10 rounded-[2.5rem] border border-dashed border-slate-200 text-center">
@@ -226,7 +273,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }): Re
                                 <p className="text-slate-400 font-bold italic">No tienes cuentas activas aún.</p>
                             </div>
                         ) : (
-                            accounts.map((acc: any) => (
+                            accounts.map((acc) => (
                                 <div key={acc.id} className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-50 flex items-center justify-between group hover:border-blue-100 transition-all">
                                     <div className="flex items-center gap-5">
                                         <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-400 group-hover:bg-blue-50 group-hover:text-blue-500 transition-all">
@@ -273,7 +320,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }): Re
                                 <p className="text-slate-400 font-bold italic">No has vinculado bancos externos aún.</p>
                             </div>
                         ) : (
-                            externalAccounts.map((ext: any) => (
+                            externalAccounts.map((ext) => (
                                 <div key={ext.id} className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-50 flex items-center justify-between group hover:border-emerald-100 transition-all">
                                     <div className="flex items-center gap-5">
                                         <div className="w-16 h-16 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600 transition-all">

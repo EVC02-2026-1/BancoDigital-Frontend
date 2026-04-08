@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -10,30 +10,89 @@ import Movements from './pages/Movements';
 
 type View = 'LOGIN' | 'REGISTER' | 'FORGOT' | 'VERIFY' | 'DASHBOARD' | 'TRANSFERS' | 'MOVEMENTS' | 'RESET_PASSWORD';
 
-const App = (): React.ReactElement => {
-    const [view, setView] = useState<View>('LOGIN');
-    const [currentUser, setCurrentUser] = useState<any>(null);
-    const [resetToken, setResetToken] = useState<string>('');
+interface AppUser {
+    name?: string;
+    email?: string;
+    verified?: boolean;
+    selfie?: string;
+}
 
-    useEffect(() => {
-        // Simple routing by reading the pathname without a React Router
-        const path = window.location.pathname;
-        if (path.startsWith('/reset-password/')) {
-            const token = path.split('/reset-password/')[1];
-            if (token) {
-                setResetToken(token);
-                setView('RESET_PASSWORD');
-                return;
-            }
-        }
+interface InitialAppState {
+    view: View;
+    currentUser?: AppUser;
+    resetToken: string;
+}
 
-        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+const AUTH_USER_KEY = 'currentUser';
+
+const getStoredToken = (): string | null => localStorage.getItem('token') || sessionStorage.getItem('token');
+
+const getStoredUser = (): AppUser | undefined => {
+    const rawUser = localStorage.getItem(AUTH_USER_KEY) || sessionStorage.getItem(AUTH_USER_KEY);
+
+    if (!rawUser) {
+        return undefined;
+    }
+
+    try {
+        return JSON.parse(rawUser) as AppUser;
+    } catch {
+        localStorage.removeItem(AUTH_USER_KEY);
+        sessionStorage.removeItem(AUTH_USER_KEY);
+        return undefined;
+    }
+};
+
+const saveUserSession = (userData: AppUser): void => {
+    const targetStorage = localStorage.getItem('token') ? localStorage : sessionStorage;
+    targetStorage.setItem(AUTH_USER_KEY, JSON.stringify(userData));
+};
+
+const clearSession = (): void => {
+    localStorage.removeItem('token');
+    sessionStorage.removeItem('token');
+    localStorage.removeItem(AUTH_USER_KEY);
+    sessionStorage.removeItem(AUTH_USER_KEY);
+};
+
+const getInitialAppState = (): InitialAppState => {
+    const path = window.location.pathname;
+
+    if (path.startsWith('/reset-password/')) {
+        const token = path.split('/reset-password/')[1];
+
         if (token) {
-            // Check session
+            return {
+                view: 'RESET_PASSWORD',
+                resetToken: token,
+            };
         }
-    }, []);
+    }
 
-    const handleLoginSuccess = (userData: any) => {
+    if (!getStoredToken()) {
+        return {
+            view: 'LOGIN',
+            resetToken: '',
+        };
+    }
+
+    const storedUser = getStoredUser();
+
+    return {
+        view: storedUser?.verified === false ? 'VERIFY' : 'DASHBOARD',
+        currentUser: storedUser,
+        resetToken: '',
+    };
+};
+
+const App = (): React.ReactElement => {
+    const [initialState] = useState<InitialAppState>(() => getInitialAppState());
+    const [view, setView] = useState<View>(initialState.view);
+    const [currentUser, setCurrentUser] = useState<AppUser | undefined>(initialState.currentUser);
+    const [resetToken] = useState<string>(initialState.resetToken);
+
+    const handleLoginSuccess = (userData: AppUser) => {
+        saveUserSession(userData);
         setCurrentUser(userData);
         if (!userData.verified) {
             setView('VERIFY');
@@ -42,20 +101,21 @@ const App = (): React.ReactElement => {
         }
     };
 
-    const handleRegisterSuccess = (userData: any) => {
+    const handleRegisterSuccess = (userData: AppUser) => {
+        saveUserSession(userData);
         setCurrentUser(userData);
         setView('VERIFY'); // Always verify after registration as per "blocking" request
     };
 
-    const handleVerified = (updatedUser: any) => {
+    const handleVerified = (updatedUser: AppUser) => {
+        saveUserSession(updatedUser);
         setCurrentUser(updatedUser);
         setView('DASHBOARD');
     };
 
     const handleLogout = () => {
-        localStorage.removeItem('token');
-        sessionStorage.removeItem('token');
-        setCurrentUser(null);
+        clearSession();
+        setCurrentUser(undefined);
         setView('LOGIN');
     };
 
