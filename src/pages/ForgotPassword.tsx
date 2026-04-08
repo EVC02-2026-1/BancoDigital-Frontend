@@ -19,7 +19,7 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ onBack }) => {
         try {
             await api.post('/auth/forgot-password', { email });
             setSubmitted(true);
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error(err);
             setErrorMsg(err?.response?.data?.message || 'Error al conectar con el servidor. Verifica que el backend esté corriendo.');
         } finally {
