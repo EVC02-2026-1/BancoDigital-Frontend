@@ -9,6 +9,7 @@ interface DashboardProps {
     onNavigate: (view: any) => void;
 }
 
+
 const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }): React.ReactElement => {
     const [accounts, setAccounts] = useState<any[]>([]);
     const [externalAccounts, setExternalAccounts] = useState<any[]>([]);
