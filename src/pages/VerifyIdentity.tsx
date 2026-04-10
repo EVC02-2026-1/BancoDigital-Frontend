@@ -1,11 +1,21 @@
 import React, { useState, useRef } from 'react';
 import Webcam from 'react-webcam';
 import { Camera, Upload, AlertCircle, ShieldCheck, CheckCircle } from 'lucide-react';
+import axios from 'axios';
 import api from '../api/api';
 
+interface VerifyUser {
+    name?: string;
+}
+
+interface VerifiedUserData {
+    name?: string;
+    selfie?: string;
+}
+
 interface VerifyIdentityProps {
-    user: any;
-    onVerified: (userData: any) => void;
+    user?: VerifyUser;
+    onVerified: (userData: VerifiedUserData) => void;
 }
 
 const VerifyIdentity: React.FC<VerifyIdentityProps> = ({ user, onVerified }) => {
@@ -25,7 +35,7 @@ const VerifyIdentity: React.FC<VerifyIdentityProps> = ({ user, onVerified }) => 
         facingMode: "user"
     };
 
-    const handleCameraError = (err: any) => {
+    const handleCameraError = (err: string | DOMException) => {
         console.error("Camera Error:", err);
         setCameraError(true);
         setError("No se pudo acceder a la cámara. Asegúrate de dar permisos en el navegador.");
@@ -40,7 +50,7 @@ const VerifyIdentity: React.FC<VerifyIdentityProps> = ({ user, onVerified }) => 
     };
 
     const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const selectedFile = e.target.files![0];
+        const selectedFile = e.target.files?.[0];
         if (selectedFile) {
             setFile(selectedFile);
             const reader = new FileReader();
@@ -70,8 +80,12 @@ const VerifyIdentity: React.FC<VerifyIdentityProps> = ({ user, onVerified }) => 
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
             onVerified(response.data);
-        } catch (err: any) {
-            setError(err.response?.data || 'Error en la verificación');
+        } catch (err: unknown) {
+            if (axios.isAxiosError<string>(err)) {
+                setError(err.response?.data || 'Error en la verificación');
+            } else {
+                setError('Error en la verificación');
+            }
         } finally {
             setLoading(false);
         }

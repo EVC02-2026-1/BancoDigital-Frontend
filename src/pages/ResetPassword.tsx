@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ArrowLeft, KeyRound, CheckCircle } from 'lucide-react';
+import axios from 'axios';
 import api from '../api/api';
 
 interface ResetPasswordProps {
@@ -26,9 +27,13 @@ const ResetPassword: React.FC<ResetPasswordProps> = ({ token, onBack }) => {
         try {
             await api.post('/auth/reset-password', { token, newPassword });
             setSubmitted(true);
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error(err);
-            setError(err.response?.data || 'Ha ocurrido un error al cambiar la contraseña. El enlace puede haber expirado.');
+            if (axios.isAxiosError<string>(err)) {
+                setError(err.response?.data || 'Ha ocurrido un error al cambiar la contraseña. El enlace puede haber expirado.');
+            } else {
+                setError('Ha ocurrido un error al cambiar la contraseña. El enlace puede haber expirado.');
+            }
         } finally {
             setLoading(false);
         }

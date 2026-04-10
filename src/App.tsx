@@ -7,8 +7,9 @@ import ResetPassword from './pages/ResetPassword';
 import VerifyIdentity from './pages/VerifyIdentity';
 import Transfers from './pages/Transfers';
 import Movements from './pages/Movements';
+import Profile from './pages/Profile';
 
-type View = 'LOGIN' | 'REGISTER' | 'FORGOT' | 'VERIFY' | 'DASHBOARD' | 'TRANSFERS' | 'MOVEMENTS' | 'RESET_PASSWORD';
+type View = 'LOGIN' | 'REGISTER' | 'FORGOT' | 'VERIFY' | 'DASHBOARD' | 'TRANSFERS' | 'MOVEMENTS' | 'RESET_PASSWORD' | 'PROFILE';
 
 interface AppUser {
     name?: string;
@@ -154,6 +155,14 @@ const App = (): React.ReactElement => {
             )}
             {view === 'MOVEMENTS' && (
                 <Movements onBack={() => setView('DASHBOARD')} />
+            )}
+            {view === 'PROFILE' && (
+                <Profile
+                    user={currentUser}
+                    onBack={() => setView('DASHBOARD')}
+                    onChangePassword={() => setView('FORGOT')}
+                    onLogout={handleLogout}
+                />
             )}
         </div>
     );

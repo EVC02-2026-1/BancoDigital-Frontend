@@ -1,9 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Eye, EyeOff, Lock, Mail, Wallet, AlertCircle } from 'lucide-react';
+import axios from 'axios';
 import api from '../api/api';
 
+interface UserData {
+    name?: string;
+    selfie?: string;
+}
+
 export interface LoginProps {
-    onLogin: (userData: any) => void;
+    onLogin: (userData: UserData) => void;
     onRegister: () => void;
     onForgot: () => void;
 }
@@ -42,8 +48,12 @@ const Login: React.FC<LoginProps> = ({ onLogin, onRegister, onForgot }) => {
             }
 
             onLogin(user);
-        } catch (err: any) {
-            setError(err.response?.data || 'Credenciales inválidas');
+        } catch (err: unknown) {
+            if (axios.isAxiosError<string>(err)) {
+                setError(err.response?.data || 'Credenciales inválidas');
+            } else {
+                setError('Credenciales inválidas');
+            }
         } finally {
             setLoading(false);
         }
@@ -51,7 +61,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, onRegister, onForgot }) => {
 
     return (
         <div className="w-screen h-screen flex bg-slate-50 overflow-hidden">
-            <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-blue-700 to-indigo-900 p-16 flex-col justify-between text-white shadow-2xl">
+            <div className="hidden lg:flex lg:w-1/2 bg-linear-to-br from-blue-700 to-indigo-900 p-16 flex-col justify-between text-white shadow-2xl">
                 <div>
                     <div className="flex items-center gap-4 mb-16">
                         <div className="w-14 h-14 bg-white/10 backdrop-blur-lg rounded-2xl flex items-center justify-center border border-white/20">
