@@ -1,9 +1,16 @@
 import React, { useState } from 'react';
 import { Mail, Lock, User, Wallet, Upload, CheckCircle, ArrowRight } from 'lucide-react';
+import axios from 'axios';
 import api from '../api/api';
 
+interface RegisterUserData {
+    name: string;
+    email: string;
+    verified: boolean;
+}
+
 interface RegisterProps {
-    onSuccess: (userData: any) => void;
+    onSuccess: (userData: RegisterUserData) => void;
     onBack: () => void;
 }
 
@@ -42,10 +49,14 @@ const Register: React.FC<RegisterProps> = ({ onSuccess, onBack }) => {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
             const { token } = response.data;
-            sessionStorage.setItem('token', token); // Guardar token temporal para la verificación
-            setStep(3); // Mostrar mensaje de éxito y aviso de correo
-        } catch (err: any) {
-            setError(err.response?.data || 'Error en el registro');
+            sessionStorage.setItem('token', token);
+            setStep(3);
+        } catch (err: unknown) {
+            if (axios.isAxiosError<string>(err)) {
+                setError(err.response?.data || 'Error en el registro');
+            } else {
+                setError('Error en el registro');
+            }
         } finally {
             setLoading(false);
         }
@@ -87,7 +98,7 @@ const Register: React.FC<RegisterProps> = ({ onSuccess, onBack }) => {
                             <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
                                 <CheckCircle className="w-12 h-12" />
                             </div>
-                            <h2 className="text-3xl font-bold text-slate-900">¡Registroitoso!</h2>
+                            <h2 className="text-3xl font-bold text-slate-900">¡Registro exitoso!</h2>
                             <div className="bg-green-50 border border-green-100 p-6 rounded-2xl mt-6 mb-8 text-center">
                                 <p className="text-green-800 font-medium">
                                     Bienvenido a BancoDigital, <span className="font-bold">{formData.name}</span>.
@@ -100,7 +111,7 @@ const Register: React.FC<RegisterProps> = ({ onSuccess, onBack }) => {
                                 Por favor, revisa tu bandeja de entrada para activar tu cuenta.
                             </p>
                             <button
-                                onClick={() => onSuccess(formData)}
+                                onClick={() => onSuccess({ name: formData.name, email: formData.email, verified: false })}
                                 className="w-full bg-blue-600 text-white py-4 rounded-xl font-bold hover:bg-blue-700 transition-all shadow-lg flex items-center justify-center gap-2"
                             >
                                 Ir al Dashboard <ArrowRight className="w-5 h-5" />
@@ -166,7 +177,7 @@ const Register: React.FC<RegisterProps> = ({ onSuccess, onBack }) => {
                                             <label className="cursor-pointer border-2 border-dashed border-slate-200 rounded-2xl p-6 flex flex-col items-center hover:border-blue-400 transition-colors bg-slate-50">
                                                 <Upload className="w-8 h-8 text-slate-400 mb-2" />
                                                 <span className="text-xs text-slate-500 text-center">{dniFront ? dniFront.name : 'Subir foto'}</span>
-                                                <input type="file" className="hidden" accept="image/*" onChange={e => setDniFront(e.target.files![0])} />
+                                                <input type="file" className="hidden" accept="image/*" onChange={e => { const f = e.target.files?.[0]; if (f) setDniFront(f); }} />
                                             </label>
                                         </div>
                                         <div className="space-y-2">
@@ -174,7 +185,7 @@ const Register: React.FC<RegisterProps> = ({ onSuccess, onBack }) => {
                                             <label className="cursor-pointer border-2 border-dashed border-slate-200 rounded-2xl p-6 flex flex-col items-center hover:border-blue-400 transition-colors bg-slate-50">
                                                 <Upload className="w-8 h-8 text-slate-400 mb-2" />
                                                 <span className="text-xs text-slate-500 text-center">{dniBack ? dniBack.name : 'Subir foto'}</span>
-                                                <input type="file" className="hidden" accept="image/*" onChange={e => setDniBack(e.target.files![0])} />
+                                                <input type="file" className="hidden" accept="image/*" onChange={e => { const f = e.target.files?.[0]; if (f) setDniBack(f); }} />
                                             </label>
                                         </div>
                                     </div>
@@ -189,7 +200,7 @@ const Register: React.FC<RegisterProps> = ({ onSuccess, onBack }) => {
                                         <button
                                             onClick={handleSubmit}
                                             disabled={loading || !dniFront || !dniBack}
-                                            className="flex-[2] bg-blue-600 text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-blue-700 disabled:opacity-50"
+                                            className="flex-2 bg-blue-600 text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-blue-700 disabled:opacity-50"
                                         >
                                             {loading ? 'Procesando...' : 'Finalizar Registro'}
                                         </button>

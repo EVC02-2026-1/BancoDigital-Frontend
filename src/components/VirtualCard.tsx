@@ -21,14 +21,14 @@ const VirtualCard: React.FC<VirtualCardProps> = ({ accountNumber, holderName, ty
                 </div>
 
                 <div className={`relative w-full aspect-[1.58/1] rounded-2xl p-8 text-white shadow-2xl overflow-hidden ${
-                    type === 'SAVINGS' ? 'bg-gradient-to-br from-emerald-500 to-teal-700' : 'bg-gradient-to-br from-indigo-600 to-blue-800'
+                    type === 'SAVINGS' ? 'bg-linear-to-br from-emerald-500 to-teal-700' : 'bg-linear-to-br from-indigo-600 to-blue-800'
                 }`}>
                     {/* Glossy overlay */}
                     <div className="absolute top-0 left-0 w-full h-full bg-white/10 skew-x-12 -translate-x-1/2 pointer-events-none"></div>
                     
                     <div className="flex justify-between items-start mb-12">
                         <div className="w-12 h-10 bg-yellow-400/80 rounded-lg border border-yellow-200/50 shadow-inner">
-                            <div className="w-full h-full opacity-20 bg-[radial-gradient(circle, #000 1px, transparent 1px)] bg-[size:4px_4px]"></div>
+                            <div className="w-full h-full opacity-20 bg-[radial-gradient(circle, #000 1px, transparent 1px)] bg-size-[4px_4px]"></div>
                         </div>
                         <CreditCard className="w-10 h-10 opacity-50" />
                     </div>

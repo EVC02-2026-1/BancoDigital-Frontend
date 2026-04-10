@@ -6,9 +6,23 @@ interface MovementsProps {
     onBack: () => void;
 }
 
+interface Movement {
+    id: number;
+    description: string;
+    createdAt: string;
+    amount: number;
+    fromAccountId: number;
+    toAccountId: number;
+}
+
+interface Account {
+    id: number;
+    type: string;
+}
+
 const Movements: React.FC<MovementsProps> = ({ onBack }) => {
-    const [movements, setMovements] = useState<any[]>([]);
-    const [accounts, setAccounts] = useState<any[]>([]);
+    const [movements, setMovements] = useState<Movement[]>([]);
+    const [accounts, setAccounts] = useState<Account[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -34,7 +48,7 @@ const Movements: React.FC<MovementsProps> = ({ onBack }) => {
         return acc ? (acc.type === 'SAVINGS' ? 'Ahorros' : 'Corriente') : 'Cuenta Externa';
     };
 
-    const isOutgoing = (mov: any) => accounts.some(a => a.id === mov.fromAccountId);
+    const isOutgoing = (mov: Movement) => accounts.some(a => a.id === mov.fromAccountId);
 
     return (
         <div className="w-full h-screen flex flex-col bg-slate-50 overflow-hidden">
@@ -52,10 +66,10 @@ const Movements: React.FC<MovementsProps> = ({ onBack }) => {
                     ) : movements.length === 0 ? (
                         <div className="bg-white rounded-3xl p-16 text-center shadow-sm border border-slate-100">
                             <Clock className="w-16 h-16 text-slate-200 mx-auto mb-6" />
-                            <h3 className="text-xl font-bold text-slate-400 italic font-medium">No hay movimientos registrados aún.</h3>
+                            <h3 className="text-xl font-bold text-slate-400 italic">No hay movimientos registrados aún.</h3>
                         </div>
                     ) : (
-                        movements.map((mov: any) => (
+                        movements.map((mov: Movement) => (
                             <div key={mov.id} className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex items-center justify-between group hover:shadow-md transition-all active:scale-[0.99] cursor-default">
                                 <div className="flex items-center gap-6">
                                     <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all ${

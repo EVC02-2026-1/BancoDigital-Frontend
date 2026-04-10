@@ -9,7 +9,7 @@ interface DashboardProps {
     onNavigate: (view: DashboardView) => void;
 }
 
-type DashboardView = 'DASHBOARD' | 'TRANSFERS' | 'MOVEMENTS';
+type DashboardView = 'DASHBOARD' | 'TRANSFERS' | 'MOVEMENTS' | 'PROFILE';
 
 interface DashboardUser {
     name?: string;
@@ -50,6 +50,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }): Re
     const isMountedRef = useRef(false);
 
     const selfieUrl = user?.selfie ? `http://localhost:8081/uploads/${encodeURIComponent(user.selfie)}` : null;
+    const [selfieFailed, setSelfieFailed] = useState(false);
 
     const fetchData = useCallback(async ({ silent = false }: { silent?: boolean } = {}) => {
         if (isFetchingRef.current) {
@@ -185,26 +186,28 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }): Re
                 </nav>
 
                 <div className="p-6 border-t border-slate-100 bg-slate-50/50">
-                    <div className="flex items-center gap-4 mb-6">
-                        <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center overflow-hidden shadow-sm border border-slate-200">
-                            {selfieUrl ? (
-                                <img 
-                                    src={selfieUrl} 
-                                    alt="Selfie" 
-                                    className="w-full h-full object-cover" 
-                                    onError={(e) => {
-                                        (e.target as HTMLImageElement).style.display = 'none';
-                                        (e.target as HTMLImageElement).parentElement!.innerHTML = '<div class="w-full h-full flex items-center justify-center bg-blue-50 text-blue-600"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></div>';
-                                    }}
+                    <button
+                        onClick={() => onNavigate('PROFILE')}
+                        className="w-full flex items-center gap-4 mb-6 p-2 -mx-2 rounded-2xl hover:bg-slate-100 transition-all group text-left"
+                        title="Ver perfil"
+                    >
+                        <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center overflow-hidden shadow-sm border border-slate-200 group-hover:border-blue-200 transition-all shrink-0">
+                            {selfieUrl && !selfieFailed ? (
+                                <img
+                                    src={selfieUrl}
+                                    alt="Selfie"
+                                    className="w-full h-full object-cover"
+                                    onError={() => setSelfieFailed(true)}
                                 />
                             ) : (
                                 <User className="w-6 h-6 text-blue-600" />
                             )}
                         </div>
                         <div className="flex-1 overflow-hidden">
-                            <p className="text-slate-900 text-sm font-bold truncate">{user?.name || 'Cliente'}</p>
+                            <p className="text-slate-900 text-sm font-bold truncate group-hover:text-blue-600 transition-colors">{user?.name || 'Cliente'}</p>
+                            <p className="text-slate-400 text-xs font-medium">Ver perfil</p>
                         </div>
-                    </div>
+                    </button>
                     <button 
                         onClick={onLogout}
                         className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-white text-red-500 border border-red-100 rounded-xl hover:bg-red-50 transition-all text-sm font-bold shadow-sm active:scale-95"
@@ -238,7 +241,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }): Re
                             onClick={() => setShowCreateModal(true)}
                             className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 flex items-center gap-6 hover:shadow-xl hover:shadow-blue-200/20 group transition-all"
                         >
-                            <div className="w-16 h-16 bg-blue-50 rounded-[1.5rem] flex items-center justify-center text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-all">
+                            <div className="w-16 h-16 bg-blue-50 rounded-3xl flex items-center justify-center text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-all">
                                 <Plus className="w-8 h-8" />
                             </div>
                             <div className="text-left">
@@ -250,7 +253,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }): Re
                             onClick={() => setShowLinkModal(true)}
                             className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 flex items-center gap-6 hover:shadow-xl hover:shadow-emerald-200/20 group transition-all"
                         >
-                            <div className="w-16 h-16 bg-emerald-50 rounded-[1.5rem] flex items-center justify-center text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-all">
+                            <div className="w-16 h-16 bg-emerald-50 rounded-3xl flex items-center justify-center text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-all">
                                 <Globe className="w-8 h-8" />
                             </div>
                             <div className="text-left">
@@ -275,7 +278,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }): Re
                             </div>
                         ) : (
                             accounts.map((acc) => (
-                                <div key={acc.id} className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-50 flex items-center justify-between group hover:border-blue-100 transition-all">
+                                <div key={acc.id} className="bg-white p-6 rounded-4xl shadow-sm border border-slate-50 flex items-center justify-between group hover:border-blue-100 transition-all">
                                     <div className="flex items-center gap-5">
                                         <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-400 group-hover:bg-blue-50 group-hover:text-blue-500 transition-all">
                                             {acc.type === 'SAVINGS' ? <TrendingUp className="w-8 h-8" /> : <Landmark className="w-8 h-8" />}
@@ -322,7 +325,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }): Re
                             </div>
                         ) : (
                             externalAccounts.map((ext) => (
-                                <div key={ext.id} className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-50 flex items-center justify-between group hover:border-emerald-100 transition-all">
+                                <div key={ext.id} className="bg-white p-6 rounded-4xl shadow-sm border border-slate-50 flex items-center justify-between group hover:border-emerald-100 transition-all">
                                     <div className="flex items-center gap-5">
                                         <div className="w-16 h-16 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600 transition-all">
                                             <Landmark className="w-8 h-8" />
@@ -349,10 +352,10 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }): Re
 
             {/* New Account Modal */}
             {showCreateModal && (
-                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[60] flex items-center justify-center p-6 animate-in fade-in duration-200">
+                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-60 flex items-center justify-center p-6 animate-in fade-in duration-200">
                     <div className="bg-white w-full max-w-md rounded-[3rem] p-10 shadow-2xl animate-in zoom-in-95 duration-300">
                         <div className="text-center mb-8">
-                            <div className="w-20 h-20 bg-blue-50 rounded-[2rem] flex items-center justify-center text-blue-600 mx-auto mb-4">
+                            <div className="w-20 h-20 bg-blue-50 rounded-4xl flex items-center justify-center text-blue-600 mx-auto mb-4">
                                 <Plus className="w-10 h-10" />
                             </div>
                             <h3 className="text-3xl font-black text-slate-900 italic">Nueva Cuenta</h3>
@@ -361,7 +364,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }): Re
                         <div className="space-y-4 mb-10">
                             <button 
                                 onClick={() => setNewAccountType('SAVINGS')}
-                                className={`w-full p-6 rounded-[2rem] border-4 transition-all flex items-center justify-between text-left ${newAccountType === 'SAVINGS' ? 'border-blue-600 bg-blue-50/20' : 'border-slate-50 hover:border-slate-100'}`}
+                                className={`w-full p-6 rounded-4xl border-4 transition-all flex items-center justify-between text-left ${newAccountType === 'SAVINGS' ? 'border-blue-600 bg-blue-50/20' : 'border-slate-50 hover:border-slate-100'}`}
                             >
                                 <div>
                                     <p className="font-black text-slate-900 text-lg">Ahorros</p>
@@ -371,7 +374,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }): Re
                             </button>
                             <button 
                                 onClick={() => setNewAccountType('CHECKING')}
-                                className={`w-full p-6 rounded-[2rem] border-4 transition-all flex items-center justify-between text-left ${newAccountType === 'CHECKING' ? 'border-blue-600 bg-blue-50/20' : 'border-slate-50 hover:border-slate-100'}`}
+                                className={`w-full p-6 rounded-4xl border-4 transition-all flex items-center justify-between text-left ${newAccountType === 'CHECKING' ? 'border-blue-600 bg-blue-50/20' : 'border-slate-50 hover:border-slate-100'}`}
                             >
                                 <div>
                                     <p className="font-black text-slate-900 text-lg">Corriente</p>
@@ -381,8 +384,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }): Re
                             </button>
                         </div>
                         <div className="flex gap-4">
-                            <button onClick={() => setShowCreateModal(false)} className="flex-1 py-5 text-slate-400 font-black hover:bg-slate-50 rounded-[1.5rem] transition-all">Cancelar</button>
-                            <button onClick={handleCreateAccount} className="flex-[2] bg-blue-600 text-white py-5 rounded-[1.5rem] font-black shadow-xl shadow-blue-200 active:scale-95 transition-all">Confirmar Apertura</button>
+                            <button onClick={() => setShowCreateModal(false)} className="flex-1 py-5 text-slate-400 font-black hover:bg-slate-50 rounded-3xl transition-all">Cancelar</button>
+                            <button onClick={handleCreateAccount} className="flex-2 bg-blue-600 text-white py-5 rounded-3xl font-black shadow-xl shadow-blue-200 active:scale-95 transition-all">Confirmar Apertura</button>
                         </div>
                     </div>
                 </div>
@@ -390,10 +393,10 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }): Re
 
             {/* Link Bank Modal */}
             {showLinkModal && (
-                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[60] flex items-center justify-center p-6 animate-in fade-in duration-200">
+                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-60 flex items-center justify-center p-6 animate-in fade-in duration-200">
                     <div className="bg-white w-full max-w-md rounded-[3rem] p-10 shadow-2xl animate-in zoom-in-95 duration-300">
                         <div className="text-center mb-8">
-                            <div className="w-20 h-20 bg-emerald-50 rounded-[2rem] flex items-center justify-center text-emerald-600 mx-auto mb-4">
+                            <div className="w-20 h-20 bg-emerald-50 rounded-4xl flex items-center justify-center text-emerald-600 mx-auto mb-4">
                                 <Globe className="w-10 h-10" />
                             </div>
                             <h3 className="text-3xl font-black text-slate-900 italic">Vincular Banco</h3>
@@ -432,8 +435,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }): Re
                             </div>
                         </div>
                         <div className="flex gap-4">
-                            <button onClick={() => setShowLinkModal(false)} className="flex-1 py-5 text-slate-400 font-black hover:bg-slate-50 rounded-[1.5rem] transition-all">Cancelar</button>
-                            <button onClick={handleLinkBank} className="flex-[2] bg-emerald-600 text-white py-5 rounded-[1.5rem] font-black shadow-xl shadow-emerald-200 active:scale-95 transition-all">Vincular Ahora</button>
+                            <button onClick={() => setShowLinkModal(false)} className="flex-1 py-5 text-slate-400 font-black hover:bg-slate-50 rounded-3xl transition-all">Cancelar</button>
+                            <button onClick={handleLinkBank} className="flex-2 bg-emerald-600 text-white py-5 rounded-3xl font-black shadow-xl shadow-emerald-200 active:scale-95 transition-all">Vincular Ahora</button>
                         </div>
                     </div>
                 </div>
@@ -451,9 +454,9 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }): Re
 
             {/* Custom Delete Confirmation Modal */}
             {showDeleteModal && (
-                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[70] flex items-center justify-center p-6 animate-in fade-in duration-200">
+                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-70 flex items-center justify-center p-6 animate-in fade-in duration-200">
                     <div className="bg-white w-full max-w-md rounded-[3rem] p-10 shadow-2xl animate-in zoom-in-95 duration-300 text-center">
-                        <div className="w-20 h-20 bg-red-50 rounded-[2rem] flex items-center justify-center text-red-500 mx-auto mb-6">
+                        <div className="w-20 h-20 bg-red-50 rounded-4xl flex items-center justify-center text-red-500 mx-auto mb-6">
                             <Trash2 className="w-10 h-10" />
                         </div>
                         <h3 className="text-3xl font-black text-slate-900 italic mb-2">¿Desvincular Banco?</h3>
@@ -465,7 +468,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }): Re
                         <div className="flex flex-col gap-3">
                             <button 
                                 onClick={confirmDelete}
-                                className="w-full bg-red-500 text-white py-5 rounded-[1.5rem] font-black shadow-xl shadow-red-200 active:scale-95 transition-all text-lg"
+                                className="w-full bg-red-500 text-white py-5 rounded-3xl font-black shadow-xl shadow-red-200 active:scale-95 transition-all text-lg"
                             >
                                 Sí, desvincular ahora
                             </button>
@@ -474,7 +477,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }): Re
                                     setShowDeleteModal(false);
                                     setAccountToDelete(null);
                                 }} 
-                                className="w-full py-5 text-slate-400 font-black hover:bg-slate-50 rounded-[1.5rem] transition-all"
+                                className="w-full py-5 text-slate-400 font-black hover:bg-slate-50 rounded-3xl transition-all"
                             >
                                 No, mantener cuenta
                             </button>

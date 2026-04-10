@@ -1,14 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Send, CheckCircle, AlertCircle, Wallet, Globe, Landmark, ChevronDown, UserPlus, Users } from 'lucide-react';
+import axios from 'axios';
 import api from '../api/api';
 
 interface TransfersProps {
     onBack: () => void;
 }
 
+interface BankAccount {
+    id: number;
+    accountNumber: string;
+    type: string;
+    balance: number;
+}
+
+interface ExternalAccount {
+    id: number;
+    accountNumber: string;
+    holderName: string;
+    bankName: string;
+}
+
 const Transfers: React.FC<TransfersProps> = ({ onBack }) => {
-    const [accounts, setAccounts] = useState<any[]>([]);
-    const [externalAccounts, setExternalAccounts] = useState<any[]>([]);
+    const [accounts, setAccounts] = useState<BankAccount[]>([]);
+    const [externalAccounts, setExternalAccounts] = useState<ExternalAccount[]>([]);
     const [fromAccount, setFromAccount] = useState('');
     const [toAccount, setToAccount] = useState('');
     const [amount, setAmount] = useState('');
@@ -54,8 +69,8 @@ const Transfers: React.FC<TransfersProps> = ({ onBack }) => {
             await api.post('/external-accounts', linkData);
             setShowLinkModal(false);
             setLinkData({ bankName: '', accountNumber: '', holderName: '' });
-            fetchExternal();
-        } catch (err) { alert("Error al vincular"); }
+            void fetchExternal();
+        } catch { alert("Error al vincular"); }
     };
 
     const formatAccountNumber = (num: string) => {
@@ -64,18 +79,27 @@ const Transfers: React.FC<TransfersProps> = ({ onBack }) => {
 
     const handleTransfer = async (e: React.FormEvent) => {
         e.preventDefault();
+        const parsedAmount = parseFloat(amount);
+        if (!parsedAmount || parsedAmount <= 0) {
+            setError('El monto debe ser mayor a cero');
+            return;
+        }
         setLoading(true);
         setError('');
         try {
             await api.post('/transactions/transfer', {
                 fromAccountNumber: fromAccount,
                 toAccountNumber: toAccount,
-                amount: parseFloat(amount),
+                amount: parsedAmount,
                 description: 'Transferencia BancoDigital'
             });
             setSuccess(true);
-        } catch (err: any) {
-            setError(err.response?.data || 'Error en la transferencia');
+        } catch (err: unknown) {
+            if (axios.isAxiosError<string>(err)) {
+                setError(err.response?.data || 'Error en la transferencia');
+            } else {
+                setError('Error en la transferencia');
+            }
         } finally {
             setLoading(false);
         }
@@ -85,7 +109,7 @@ const Transfers: React.FC<TransfersProps> = ({ onBack }) => {
         return (
             <div className="w-full h-screen flex items-center justify-center bg-slate-50 p-6">
                 <div className="max-w-md w-full bg-white rounded-[3rem] shadow-2xl p-12 text-center animate-in zoom-in-95 duration-300">
-                    <div className="w-24 h-24 bg-emerald-50 rounded-[2rem] flex items-center justify-center text-emerald-500 mx-auto mb-8">
+                    <div className="w-24 h-24 bg-emerald-50 rounded-4xl flex items-center justify-center text-emerald-500 mx-auto mb-8">
                         <CheckCircle className="w-12 h-12" />
                     </div>
                     <h2 className="text-3xl font-black text-slate-900 mb-3 italic">¡Transferencia Exitosa!</h2>
@@ -119,7 +143,7 @@ const Transfers: React.FC<TransfersProps> = ({ onBack }) => {
             <div className="flex-1 overflow-y-auto p-8">
                 <div className="max-w-xl mx-auto py-10">
                     {error && (
-                        <div className="mb-8 p-5 bg-red-50 border-2 border-red-100 text-red-600 rounded-[1.5rem] flex items-center gap-4 animate-in slide-in-from-top-4">
+                        <div className="mb-8 p-5 bg-red-50 border-2 border-red-100 text-red-600 rounded-3xl flex items-center gap-4 animate-in slide-in-from-top-4">
                             <AlertCircle className="w-6 h-6 shrink-0" />
                             <p className="text-sm font-black italic">{error}</p>
                         </div>
@@ -212,7 +236,7 @@ const Transfers: React.FC<TransfersProps> = ({ onBack }) => {
                                     type="number"
                                     step="0.01"
                                     placeholder="0.00"
-                                    className="w-full pl-14 pr-8 py-7 bg-slate-50 border-2 border-slate-50 rounded-[2rem] focus:border-blue-600 focus:bg-white outline-none transition-all font-black text-5xl text-blue-600 tracking-tighter"
+                                    className="w-full pl-14 pr-8 py-7 bg-slate-50 border-2 border-slate-50 rounded-4xl focus:border-blue-600 focus:bg-white outline-none transition-all font-black text-5xl text-blue-600 tracking-tighter"
                                     value={amount}
                                     onChange={e => setAmount(e.target.value)}
                                     required
@@ -223,7 +247,7 @@ const Transfers: React.FC<TransfersProps> = ({ onBack }) => {
                         <button 
                             type="submit"
                             disabled={loading || !toAccount || !amount}
-                            className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-slate-200 disabled:text-slate-400 text-white rounded-[2rem] py-6 transition-all shadow-2xl shadow-blue-200 text-lg font-black flex items-center justify-center gap-4 active:scale-[0.98] mt-10"
+                            className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-slate-200 disabled:text-slate-400 text-white rounded-4xl py-6 transition-all shadow-2xl shadow-blue-200 text-lg font-black flex items-center justify-center gap-4 active:scale-[0.98] mt-10"
                         >
                             <Send className="w-6 h-6" />
                             {loading ? 'Procesando Envío...' : 'Confirmar Transferencia'}
@@ -234,10 +258,10 @@ const Transfers: React.FC<TransfersProps> = ({ onBack }) => {
 
             {/* Link Modal */}
             {showLinkModal && (
-                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[60] flex items-center justify-center p-6 animate-in fade-in duration-200">
-                    <div className="bg-white w-full max-md rounded-[3rem] p-10 shadow-2xl animate-in zoom-in-95 duration-300">
+                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-60 flex items-center justify-center p-6 animate-in fade-in duration-200">
+                    <div className="bg-white w-full max-w-md rounded-[3rem] p-10 shadow-2xl animate-in zoom-in-95 duration-300">
                         <div className="text-center mb-8">
-                            <div className="w-20 h-20 bg-emerald-50 rounded-[2rem] flex items-center justify-center text-emerald-600 mx-auto mb-4">
+                            <div className="w-20 h-20 bg-emerald-50 rounded-4xl flex items-center justify-center text-emerald-600 mx-auto mb-4">
                                 <Globe className="w-10 h-10" />
                             </div>
                             <h3 className="text-3xl font-black text-slate-900 italic">Vincular Banco</h3>
@@ -267,8 +291,8 @@ const Transfers: React.FC<TransfersProps> = ({ onBack }) => {
                             />
                         </div>
                         <div className="flex gap-4">
-                            <button onClick={() => setShowLinkModal(false)} className="flex-1 py-5 text-slate-400 font-black hover:bg-slate-50 rounded-[1.5rem] transition-all">Cancelar</button>
-                            <button onClick={handleLinkBank} className="flex-[2] bg-emerald-600 text-white py-5 rounded-[1.5rem] font-black shadow-xl shadow-emerald-200 transition-all active:scale-95">Vincular Ahora</button>
+                            <button onClick={() => setShowLinkModal(false)} className="flex-1 py-5 text-slate-400 font-black hover:bg-slate-50 rounded-3xl transition-all">Cancelar</button>
+                            <button onClick={handleLinkBank} className="flex-2 bg-emerald-600 text-white py-5 rounded-3xl font-black shadow-xl shadow-emerald-200 transition-all active:scale-95">Vincular Ahora</button>
                         </div>
                     </div>
                 </div>

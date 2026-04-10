@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Mail, ArrowLeft, KeyRound, CheckCircle } from 'lucide-react';
+import axios from 'axios';
 import api from '../api/api';
 
 interface ForgotPasswordProps {
@@ -21,7 +22,11 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ onBack }) => {
             setSubmitted(true);
         } catch (err: unknown) {
             console.error(err);
-            setErrorMsg(err?.response?.data?.message || 'Error al conectar con el servidor. Verifica que el backend esté corriendo.');
+            if (axios.isAxiosError<{ message?: string }>(err)) {
+                setErrorMsg(err.response?.data?.message || 'Error al conectar con el servidor. Verifica que el backend esté corriendo.');
+            } else {
+                setErrorMsg('Error al conectar con el servidor. Verifica que el backend esté corriendo.');
+            }
         } finally {
             setLoading(false);
         }
