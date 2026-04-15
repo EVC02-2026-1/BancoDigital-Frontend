@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { ArrowUpRight, CreditCard, Home, LogOut, Receipt, Settings, TrendingUp, User, Wallet, Plus, Globe, Landmark, Coins, Trash2, RefreshCcw } from 'lucide-react';
+import { ArrowUpRight, CreditCard, Home, LogOut, Receipt, Settings, TrendingUp, User, Wallet, Plus, Globe, Landmark, Coins, Trash2, RefreshCcw, AlertCircle } from 'lucide-react';
+import axios from 'axios';
 import api from '../api/api';
 import VirtualCard from '../components/VirtualCard';
 
@@ -43,6 +44,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }): Re
     const [showBalances, setShowBalances] = useState<Record<number, boolean>>({});
     const [initialLoading, setInitialLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
+    const [accountsError, setAccountsError] = useState('');
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [accountToDelete, setAccountToDelete] = useState<ExternalAccount | null>(null);
     const isFetchingRef = useRef(false);
@@ -75,8 +77,25 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }): Re
 
             setAccounts(accRes.data);
             setExternalAccounts(extRes.data);
+            setAccountsError('');
         } catch (err) {
             console.error("Error fetching data", err);
+
+            if (!isMountedRef.current) {
+                return;
+            }
+
+            if (!navigator.onLine) {
+                setAccountsError('No se puede obtener el saldo porque no hay conexión a internet.');
+                return;
+            }
+
+            if (axios.isAxiosError(err) && !err.response) {
+                setAccountsError('No se pudo conectar con el servicio para consultar el saldo.');
+                return;
+            }
+
+            setAccountsError('No fue posible consultar tu saldo en este momento. Intenta nuevamente.');
         } finally {
             isFetchingRef.current = false;
 
@@ -234,6 +253,24 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogout, onNavigate }): Re
                             <RefreshCcw className={`w-6 h-6 group-hover:rotate-180 transition-all duration-500 ${refreshing ? 'animate-spin' : ''}`} />
                         </button>
                     </div>
+
+                    {accountsError && (
+                        <div className="mb-8 flex items-start justify-between gap-4 rounded-[2rem] border border-red-100 bg-red-50 px-6 py-5 text-red-600">
+                            <div className="flex items-start gap-3">
+                                <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" />
+                                <div>
+                                    <p className="text-sm font-black uppercase tracking-widest">Consulta de saldo no disponible</p>
+                                    <p className="mt-1 text-sm font-medium">{accountsError}</p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => void fetchData()}
+                                className="shrink-0 rounded-2xl bg-white px-4 py-3 text-xs font-black uppercase tracking-widest text-red-600 shadow-sm transition-all hover:bg-red-600 hover:text-white"
+                            >
+                                Reintentar
+                            </button>
+                        </div>
+                    )}
 
                     {/* Action Cards */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Send, CheckCircle, AlertCircle, Wallet, Globe, Landmark, ChevronDown, UserPlus, Users } from 'lucide-react';
+import { ArrowLeft, Send, CheckCircle, AlertCircle, Wallet, Globe, Landmark, ChevronDown, UserPlus, Users, ShieldCheck, XCircle } from 'lucide-react';
 import axios from 'axios';
 import api from '../api/api';
 
@@ -30,6 +30,7 @@ const Transfers: React.FC<TransfersProps> = ({ onBack }) => {
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState('');
+    const [showConfirmation, setShowConfirmation] = useState(false);
     const [showLinkModal, setShowLinkModal] = useState(false);
     const [showSelection, setShowSelection] = useState(false);
     const [linkData, setLinkData] = useState({ bankName: '', accountNumber: '', holderName: '' });
@@ -77,15 +78,35 @@ const Transfers: React.FC<TransfersProps> = ({ onBack }) => {
         return num.replace(/(\d{4})/g, '$1 ').trim();
     };
 
-    const handleTransfer = async (e: React.FormEvent) => {
+    const selectedSourceAccount = accounts.find(account => account.accountNumber === fromAccount);
+    const selectedExternalAccount = externalAccounts.find(account => account.accountNumber === toAccount);
+
+    const parsedAmount = parseFloat(amount);
+    const formattedAmount = !parsedAmount || parsedAmount <= 0
+        ? '$0'
+        : parsedAmount.toLocaleString('es-CO', { style: 'currency', currency: 'COP' });
+
+    const openConfirmation = (e: React.FormEvent) => {
         e.preventDefault();
-        const parsedAmount = parseFloat(amount);
+
         if (!parsedAmount || parsedAmount <= 0) {
             setError('El monto debe ser mayor a cero');
             return;
         }
+
+        if (!fromAccount || !toAccount) {
+            setError('Completa la cuenta de origen y destino para continuar');
+            return;
+        }
+
+        setError('');
+        setShowConfirmation(true);
+    };
+
+    const handleTransfer = async () => {
         setLoading(true);
         setError('');
+
         try {
             await api.post('/transactions/transfer', {
                 fromAccountNumber: fromAccount,
@@ -93,6 +114,7 @@ const Transfers: React.FC<TransfersProps> = ({ onBack }) => {
                 amount: parsedAmount,
                 description: 'Transferencia BancoDigital'
             });
+            setShowConfirmation(false);
             setSuccess(true);
         } catch (err: unknown) {
             if (axios.isAxiosError<string>(err)) {
@@ -100,6 +122,7 @@ const Transfers: React.FC<TransfersProps> = ({ onBack }) => {
             } else {
                 setError('Error en la transferencia');
             }
+            setShowConfirmation(false);
         } finally {
             setLoading(false);
         }
@@ -149,7 +172,7 @@ const Transfers: React.FC<TransfersProps> = ({ onBack }) => {
                         </div>
                     )}
 
-                    <form onSubmit={handleTransfer} className="space-y-8 bg-white p-10 rounded-[3rem] shadow-xl border border-slate-100">
+                    <form onSubmit={openConfirmation} className="space-y-8 bg-white p-10 rounded-[3rem] shadow-xl border border-slate-100">
                         {/* From Account */}
                         <div>
                             <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 ml-4">Origen de fondos</label>
@@ -250,11 +273,99 @@ const Transfers: React.FC<TransfersProps> = ({ onBack }) => {
                             className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-slate-200 disabled:text-slate-400 text-white rounded-4xl py-6 transition-all shadow-2xl shadow-blue-200 text-lg font-black flex items-center justify-center gap-4 active:scale-[0.98] mt-10"
                         >
                             <Send className="w-6 h-6" />
-                            {loading ? 'Procesando Envío...' : 'Confirmar Transferencia'}
+                            Revisar Transferencia
                         </button>
                     </form>
                 </div>
             </div>
+
+            {showConfirmation && (
+                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-60 flex items-center justify-center p-6 animate-in fade-in duration-200">
+                    <div className="w-full max-w-2xl rounded-[3rem] bg-white p-10 shadow-2xl animate-in zoom-in-95 duration-300">
+                        <div className="mb-8 flex items-start justify-between gap-6">
+                            <div className="flex items-center gap-4">
+                                <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-blue-50 text-blue-600">
+                                    <ShieldCheck className="h-8 w-8" />
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-600">Confirmación segura</p>
+                                    <h2 className="mt-2 text-3xl font-black italic text-slate-900">Revisa antes de enviar</h2>
+                                    <p className="mt-2 text-sm font-medium text-slate-400">Verifica los datos de la operación antes de ejecutarla.</p>
+                                </div>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setShowConfirmation(false)}
+                                disabled={loading}
+                                className="group rounded-2xl p-3 text-slate-400 transition-all duration-200 hover:-translate-y-0.5 hover:bg-slate-100 hover:text-slate-700 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
+                                title="Cerrar confirmación"
+                            >
+                                <XCircle className="h-6 w-6 transition-all duration-200 group-hover:scale-110 group-hover:rotate-6" />
+                            </button>
+                        </div>
+
+                        <div className="mb-8 rounded-[2rem] border border-blue-100 bg-blue-50/40 px-8 py-7">
+                            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Monto a transferir</p>
+                            <p className="mt-3 text-5xl font-black tracking-tighter text-blue-600">{formattedAmount}</p>
+                        </div>
+
+                        <div className="grid gap-4 md:grid-cols-2">
+                            <div className="rounded-[2rem] border border-slate-100 bg-slate-50 p-6">
+                                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Cuenta origen</p>
+                                <p className="mt-4 text-lg font-black text-slate-900">
+                                    {selectedSourceAccount?.type === 'SAVINGS' ? 'Cuenta de Ahorros' : 'Cuenta Corriente'}
+                                </p>
+                                <p className="mt-2 font-mono text-sm font-bold tracking-widest text-slate-500">
+                                    {formatAccountNumber(fromAccount)}
+                                </p>
+                            </div>
+
+                            <div className="rounded-[2rem] border border-slate-100 bg-slate-50 p-6">
+                                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Cuenta destino</p>
+                                <p className="mt-4 text-lg font-black text-slate-900">
+                                    {selectedExternalAccount?.holderName || 'Cuenta destino digitada'}
+                                </p>
+                                <p className="mt-2 font-mono text-sm font-bold tracking-widest text-slate-500">
+                                    {formatAccountNumber(toAccount)}
+                                </p>
+                                <p className="mt-2 text-[10px] font-black uppercase tracking-[0.3em] text-emerald-600">
+                                    {selectedExternalAccount?.bankName || 'Transferencia manual'}
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="mt-6 rounded-[2rem] border border-amber-100 bg-amber-50 px-6 py-5">
+                            <div className="flex items-start gap-3 text-amber-700">
+                                <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" />
+                                <p className="text-sm font-bold">
+                                    Confirma solo si los datos del destinatario y el monto son correctos. Esta acción ejecutará la transferencia.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                            <button
+                                type="button"
+                                onClick={() => setShowConfirmation(false)}
+                                disabled={loading}
+                                className="group flex flex-1 items-center justify-center gap-3 rounded-3xl py-5 font-black text-slate-400 transition-all duration-200 hover:-translate-y-0.5 hover:bg-slate-50 hover:text-slate-700 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                                <XCircle className="h-5 w-5 transition-all duration-200 group-hover:scale-110 group-hover:-rotate-6" />
+                                Cancelar operación
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => void handleTransfer()}
+                                disabled={loading}
+                                className="group flex flex-1 items-center justify-center gap-3 rounded-3xl bg-blue-600 py-5 font-black text-white shadow-xl shadow-blue-200 transition-all duration-200 hover:-translate-y-1 hover:bg-blue-700 hover:shadow-2xl hover:shadow-blue-300 active:scale-95 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400"
+                            >
+                                {!loading && <Send className="h-5 w-5 transition-all duration-200 group-hover:translate-x-1 group-hover:-translate-y-0.5" />}
+                                {loading ? 'Procesando envío...' : 'Confirmar y enviar'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Link Modal */}
             {showLinkModal && (
