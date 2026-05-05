@@ -33,15 +33,15 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ onBack }) => {
     };
 
     return (
-        <div className="w-screen h-screen flex items-center justify-center bg-slate-50 p-6">
-            <div className="max-w-md w-full bg-white rounded-3xl shadow-xl p-10">
+        <div className="w-screen min-h-screen flex items-center justify-center bg-slate-50 p-4 sm:p-6">
+            <div className="max-w-md w-full bg-white rounded-3xl shadow-xl p-6 sm:p-10">
                 {!submitted ? (
                     <>
                         <div className="text-center mb-8">
                             <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
                                 <KeyRound className="w-8 h-8" />
                             </div>
-                            <h2 className="text-3xl font-bold text-slate-900">¿Olvidaste tu clave?</h2>
+                            <h2 className="text-2xl sm:text-3xl font-bold text-slate-900">¿Olvidaste tu clave?</h2>
                             <p className="text-slate-500 mt-2">No te preocupes, te enviaremos instrucciones para recuperarla.</p>
                         </div>
                         {errorMsg && (
@@ -74,17 +74,17 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ onBack }) => {
                         </form>
                     </>
                 ) : (
-                    <div className="text-center py-8">
-                        <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
-                            <CheckCircle className="w-12 h-12" />
+                    <div className="text-center py-4 sm:py-8">
+                        <div className="w-16 h-16 sm:w-20 sm:h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <CheckCircle className="w-9 h-9 sm:w-12 sm:h-12" />
                         </div>
-                        <h2 className="text-3xl font-bold text-slate-900">¡Correo enviado!</h2>
-                        <div className="bg-green-50 border border-green-100 p-6 rounded-2xl mt-6 mb-8">
+                        <h2 className="text-2xl sm:text-3xl font-bold text-slate-900">¡Correo enviado!</h2>
+                        <div className="bg-green-50 border border-green-100 p-4 sm:p-6 rounded-2xl mt-6 mb-8">
                             <p className="text-green-800 font-medium">
                                 Hemos enviado instrucciones a:<br/>
-                                <span className="text-green-600 font-bold">{email}</span>
+                                <span className="text-green-600 font-bold break-all">{email}</span>
                             </p>
-                            <p className="text-green-700 text-sm mt-3 flex items-center justify-center gap-2">
+                            <p className="text-green-700 text-sm mt-3 flex items-center justify-center gap-2 flex-wrap">
                                 <Mail className="w-4 h-4" /> Por favor, revisa tu bandeja de entrada.
                             </p>
                         </div>
