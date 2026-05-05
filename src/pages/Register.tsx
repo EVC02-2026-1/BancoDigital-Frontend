@@ -63,7 +63,7 @@ const Register: React.FC<RegisterProps> = ({ onSuccess, onBack }) => {
     };
 
     return (
-        <div className="w-screen h-screen flex bg-slate-50 overflow-y-auto">
+        <div className="w-screen min-h-screen flex bg-slate-50 overflow-y-auto">
             <div className="hidden lg:flex lg:w-1/3 bg-blue-700 p-12 flex-col justify-between text-white">
                 <div>
                     <div className="flex items-center gap-3 mb-12">
@@ -80,10 +80,10 @@ const Register: React.FC<RegisterProps> = ({ onSuccess, onBack }) => {
                 </div>
             </div>
 
-            <div className="flex-1 flex items-center justify-center p-8">
-                <div className="w-full max-w-xl bg-white rounded-3xl shadow-xl p-10">
-                    <div className="mb-8">
-                        <h1 className="text-3xl font-bold text-slate-900">
+            <div className="flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-8">
+                <div className="w-full max-w-xl bg-white rounded-3xl shadow-xl p-5 sm:p-8 lg:p-10">
+                    <div className="mb-6 sm:mb-8">
+                        <h1 className="text-2xl font-bold text-slate-900 sm:text-3xl">
                             {step === 1 ? 'Crea tu cuenta' : 'Verifica tu identidad'}
                         </h1>
                         <p className="text-slate-500">
@@ -94,16 +94,16 @@ const Register: React.FC<RegisterProps> = ({ onSuccess, onBack }) => {
                     {error && <div className="bg-red-50 text-red-600 p-4 rounded-xl mb-6">{error}</div>}
 
                     {step === 3 ? (
-                        <div className="text-center py-8">
-                            <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
-                                <CheckCircle className="w-12 h-12" />
+                        <div className="text-center py-4 sm:py-8">
+                            <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-5 sm:h-20 sm:w-20 sm:mb-6">
+                                <CheckCircle className="h-9 w-9 sm:h-12 sm:w-12" />
                             </div>
-                            <h2 className="text-3xl font-bold text-slate-900">¡Registro exitoso!</h2>
-                            <div className="bg-green-50 border border-green-100 p-6 rounded-2xl mt-6 mb-8 text-center">
+                            <h2 className="text-2xl font-bold text-slate-900 sm:text-3xl">¡Registro exitoso!</h2>
+                            <div className="bg-green-50 border border-green-100 p-4 rounded-2xl mt-5 mb-6 text-center sm:p-6 sm:mt-6 sm:mb-8">
                                 <p className="text-green-800 font-medium">
                                     Bienvenido a BancoDigital, <span className="font-bold">{formData.name}</span>.
                                 </p>
-                                <p className="text-green-700 text-sm mt-3 flex items-center justify-center gap-2">
+                                <p className="text-green-700 text-sm mt-3 flex items-center justify-center gap-2 flex-wrap">
                                     <Mail className="w-4 h-4" /> Hemos enviado un correo de verificación a su cuenta.
                                 </p>
                             </div>
@@ -120,7 +120,7 @@ const Register: React.FC<RegisterProps> = ({ onSuccess, onBack }) => {
                     ) : (
                         <>
                             {step === 1 ? (
-                                <div className="space-y-6">
+                                <div className="space-y-5 sm:space-y-6">
                                     {/* ... existing step 1 inputs ... */}
                                     <div>
                                         <label className="block text-sm font-medium text-slate-700 mb-2">Nombre Completo</label>
@@ -170,27 +170,27 @@ const Register: React.FC<RegisterProps> = ({ onSuccess, onBack }) => {
                                     </button>
                                 </div>
                             ) : (
-                                <div className="space-y-6">
+                                <div className="space-y-5 sm:space-y-6">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div className="space-y-2">
                                             <p className="text-sm font-medium text-slate-700">DNI Frontal</p>
-                                            <label className="cursor-pointer border-2 border-dashed border-slate-200 rounded-2xl p-6 flex flex-col items-center hover:border-blue-400 transition-colors bg-slate-50">
-                                                <Upload className="w-8 h-8 text-slate-400 mb-2" />
-                                                <span className="text-xs text-slate-500 text-center">{dniFront ? dniFront.name : 'Subir foto'}</span>
+                                            <label className="cursor-pointer border-2 border-dashed border-slate-200 rounded-2xl p-5 sm:p-6 flex flex-col items-center hover:border-blue-400 transition-colors bg-slate-50">
+                                                <Upload className="w-7 h-7 sm:w-8 sm:h-8 text-slate-400 mb-2" />
+                                                <span className="text-xs text-slate-500 text-center break-all">{dniFront ? dniFront.name : 'Subir foto'}</span>
                                                 <input type="file" className="hidden" accept="image/*" onChange={e => { const f = e.target.files?.[0]; if (f) setDniFront(f); }} />
                                             </label>
                                         </div>
                                         <div className="space-y-2">
                                             <p className="text-sm font-medium text-slate-700">DNI Trasero</p>
-                                            <label className="cursor-pointer border-2 border-dashed border-slate-200 rounded-2xl p-6 flex flex-col items-center hover:border-blue-400 transition-colors bg-slate-50">
-                                                <Upload className="w-8 h-8 text-slate-400 mb-2" />
-                                                <span className="text-xs text-slate-500 text-center">{dniBack ? dniBack.name : 'Subir foto'}</span>
+                                            <label className="cursor-pointer border-2 border-dashed border-slate-200 rounded-2xl p-5 sm:p-6 flex flex-col items-center hover:border-blue-400 transition-colors bg-slate-50">
+                                                <Upload className="w-7 h-7 sm:w-8 sm:h-8 text-slate-400 mb-2" />
+                                                <span className="text-xs text-slate-500 text-center break-all">{dniBack ? dniBack.name : 'Subir foto'}</span>
                                                 <input type="file" className="hidden" accept="image/*" onChange={e => { const f = e.target.files?.[0]; if (f) setDniBack(f); }} />
                                             </label>
                                         </div>
                                     </div>
 
-                                    <div className="flex gap-4">
+                                    <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
                                         <button
                                             onClick={handlePrev}
                                             className="flex-1 border border-slate-200 text-slate-600 py-4 rounded-xl font-bold hover:bg-slate-50"

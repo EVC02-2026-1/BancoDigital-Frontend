@@ -79,11 +79,11 @@ const Login: React.FC<LoginProps> = ({ onLogin, onRegister, onForgot }) => {
                 </div>
             </div>
 
-            <div className="flex-1 flex items-center justify-center p-8 bg-white lg:bg-slate-50">
-                <div className="w-full max-w-md space-y-10 bg-white p-2 lg:p-10 rounded-3xl lg:shadow-xl">
+            <div className="flex-1 flex items-center justify-center p-4 sm:p-8 bg-white lg:bg-slate-50 overflow-y-auto">
+                <div className="w-full max-w-md space-y-8 sm:space-y-10 bg-white p-2 lg:p-10 rounded-3xl lg:shadow-xl">
                     <div>
-                        <h2 className="text-slate-900 text-4xl font-black mb-3">¡Hola de nuevo!</h2>
-                        <p className="text-slate-500 text-lg">Ingresa a tu cuenta para continuar</p>
+                        <h2 className="text-slate-900 text-3xl sm:text-4xl font-black mb-3">¡Hola de nuevo!</h2>
+                        <p className="text-slate-500 text-base sm:text-lg">Ingresa a tu cuenta para continuar</p>
                     </div>
 
                     {error && (
@@ -130,7 +130,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, onRegister, onForgot }) => {
                             </div>
                         </div>
 
-                        <div className="flex items-center justify-between">
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                             <label className="flex items-center gap-3 cursor-pointer group">
                                 <input 
                                     type="checkbox" 
@@ -143,7 +143,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, onRegister, onForgot }) => {
                             <button 
                                 type="button" 
                                 onClick={onForgot}
-                                className="text-blue-600 text-sm font-bold hover:text-blue-700 hover:underline decoration-2 underline-offset-4"
+                                className="text-left text-blue-600 text-sm font-bold hover:text-blue-700 hover:underline decoration-2 underline-offset-4 sm:text-right"
                             >
                                 ¿Olvidaste tu contraseña?
                             </button>
@@ -152,7 +152,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, onRegister, onForgot }) => {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white rounded-2xl py-5 transition-all shadow-[0_10px_30px_-10px_rgba(37,99,235,0.4)] text-lg font-bold active:scale-[0.98]"
+                            className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white rounded-2xl py-4 sm:py-5 transition-all shadow-[0_10px_30px_-10px_rgba(37,99,235,0.4)] text-base sm:text-lg font-bold active:scale-[0.98]"
                         >
                             {loading ? 'Iniciando sesión...' : 'Iniciar sesión'}
                         </button>

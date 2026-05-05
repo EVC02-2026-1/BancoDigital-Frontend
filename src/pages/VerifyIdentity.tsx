@@ -92,16 +92,16 @@ const VerifyIdentity: React.FC<VerifyIdentityProps> = ({ user, onVerified }) => 
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
+        <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 sm:p-6">
             <div className="max-w-2xl w-full bg-white rounded-3xl shadow-2xl overflow-hidden">
-                <div className="bg-blue-600 p-8 text-white text-center">
-                    <ShieldCheck className="w-16 h-16 mx-auto mb-4" />
-                    <h1 className="text-3xl font-bold">Verificación de Identidad</h1>
-                    <p className="text-blue-100 mt-2">Hola {user?.name}, activa tu cuenta ahora</p>
+                <div className="bg-blue-600 p-5 text-white text-center sm:p-8">
+                    <ShieldCheck className="w-12 h-12 mx-auto mb-3 sm:w-16 sm:h-16 sm:mb-4" />
+                    <h1 className="text-2xl font-bold sm:text-3xl">Verificación de Identidad</h1>
+                    <p className="text-blue-100 mt-2 break-words">Hola {user?.name}, activa tu cuenta ahora</p>
                 </div>
 
-                <div className="p-10">
-                    <div className="bg-blue-50 border border-blue-100 rounded-2xl p-6 mb-8 flex gap-4 items-start">
+                <div className="p-5 sm:p-8 lg:p-10">
+                    <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4 mb-6 flex gap-3 items-start sm:p-6 sm:mb-8 sm:gap-4">
                         <AlertCircle className="w-6 h-6 text-blue-600 shrink-0 mt-1" />
                         <div>
                             <h3 className="font-bold text-blue-900">¿Por qué es necesario?</h3>
@@ -117,20 +117,20 @@ const VerifyIdentity: React.FC<VerifyIdentityProps> = ({ user, onVerified }) => 
                     </div>}
 
                     {mode === 'CHOOSING' && !image && (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                             <button
                                 onClick={() => { setMode('CAMERA'); setCameraError(false); setCameraReady(false); }}
-                                className="flex flex-col items-center justify-center p-10 border-2 border-dashed border-slate-200 rounded-3xl hover:border-blue-400 hover:bg-slate-50 transition-all group"
+                                className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-slate-200 rounded-3xl hover:border-blue-400 hover:bg-slate-50 transition-all group sm:p-10"
                             >
-                                <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mb-4 group-hover:bg-blue-600 group-hover:text-white transition-all">
-                                    <Camera className="w-8 h-8" />
+                                <div className="w-14 h-14 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mb-3 group-hover:bg-blue-600 group-hover:text-white transition-all sm:w-16 sm:h-16 sm:mb-4">
+                                    <Camera className="w-7 h-7 sm:w-8 sm:h-8" />
                                 </div>
                                 <span className="font-bold text-slate-700">Usar Cámara</span>
                             </button>
 
-                            <label className="flex flex-col items-center justify-center p-10 border-2 border-dashed border-slate-200 rounded-3xl hover:border-blue-400 hover:bg-slate-50 transition-all cursor-pointer group">
-                                <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mb-4 group-hover:bg-blue-600 group-hover:text-white transition-all">
-                                    <Upload className="w-8 h-8" />
+                            <label className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-slate-200 rounded-3xl hover:border-blue-400 hover:bg-slate-50 transition-all cursor-pointer group sm:p-10">
+                                <div className="w-14 h-14 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mb-3 group-hover:bg-blue-600 group-hover:text-white transition-all sm:w-16 sm:h-16 sm:mb-4">
+                                    <Upload className="w-7 h-7 sm:w-8 sm:h-8" />
                                 </div>
                                 <span className="font-bold text-slate-700">Subir Archivo</span>
                                 <input type="file" className="hidden" accept="image/*" onChange={handleFileUpload} />
@@ -163,7 +163,7 @@ const VerifyIdentity: React.FC<VerifyIdentityProps> = ({ user, onVerified }) => 
                                     className={`w-full h-full object-cover ${cameraReady ? 'opacity-100' : 'opacity-0'} transition-opacity`}
                                 />
                             </div>
-                            <div className="flex gap-4 w-full">
+                            <div className="flex flex-col gap-3 w-full sm:flex-row sm:gap-4">
                                 <button onClick={() => setMode('CHOOSING')} className="flex-1 py-4 border border-slate-200 rounded-xl font-bold text-slate-600">Cancelar</button>
                                 <button 
                                     onClick={capture} 
@@ -178,8 +178,8 @@ const VerifyIdentity: React.FC<VerifyIdentityProps> = ({ user, onVerified }) => 
 
                     {image && (
                         <div className="flex flex-col items-center">
-                            <img src={image} alt="Selfie" className="w-64 h-64 object-cover rounded-full border-4 border-blue-600 mb-6 shadow-xl" />
-                            <div className="flex gap-4 w-full">
+                            <img src={image} alt="Selfie" className="w-40 h-40 object-cover rounded-full border-4 border-blue-600 mb-6 shadow-xl sm:w-64 sm:h-64" />
+                            <div className="flex flex-col gap-3 w-full sm:flex-row sm:gap-4">
                                 <button onClick={() => { setImage(null); setFile(null); }} className="flex-1 py-4 border border-slate-200 rounded-xl font-bold text-slate-600">Repetir</button>
                                 <button onClick={handleSubmit} disabled={loading} className="flex-1 py-4 bg-blue-600 text-white rounded-xl font-bold shadow-lg hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center gap-2">
                                     {loading ? 'Subiendo...' : 'Confirmar Verificación'} <CheckCircle className="w-5 h-5 ml-2" />

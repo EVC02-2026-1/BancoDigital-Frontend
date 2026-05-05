@@ -32,7 +32,7 @@ const Transfers: React.FC<TransfersProps> = ({ onBack }) => {
     const [error, setError] = useState('');
     const [showConfirmation, setShowConfirmation] = useState(false);
     const [showLinkModal, setShowLinkModal] = useState(false);
-    const [showSelection, setShowSelection] = useState(false);
+    const [showLinkedAccountsModal, setShowLinkedAccountsModal] = useState(false);
     const [linkData, setLinkData] = useState({ bankName: '', accountNumber: '', holderName: '' });
 
     useEffect(() => {
@@ -79,7 +79,15 @@ const Transfers: React.FC<TransfersProps> = ({ onBack }) => {
     };
 
     const selectedSourceAccount = accounts.find(account => account.accountNumber === fromAccount);
+    const selectedDestinationAccount = accounts.find(account => account.accountNumber === toAccount);
     const selectedExternalAccount = externalAccounts.find(account => account.accountNumber === toAccount);
+    const destinationOptions = accounts.filter(account => account.accountNumber !== fromAccount);
+    const destinationLabel = selectedDestinationAccount
+        ? (selectedDestinationAccount.type === 'SAVINGS' ? 'Cuenta de Ahorros' : 'Cuenta Corriente')
+        : selectedExternalAccount?.holderName || 'Cuenta destino digitada';
+    const destinationContext = selectedDestinationAccount
+        ? 'BancoDigital'
+        : selectedExternalAccount?.bankName || 'Transferencia manual';
 
     const parsedAmount = parseFloat(amount);
     const formattedAmount = !parsedAmount || parsedAmount <= 0
@@ -130,14 +138,14 @@ const Transfers: React.FC<TransfersProps> = ({ onBack }) => {
 
     if (success) {
         return (
-            <div className="w-full h-screen flex items-center justify-center bg-slate-50 p-6">
-                <div className="max-w-md w-full bg-white rounded-[3rem] shadow-2xl p-12 text-center animate-in zoom-in-95 duration-300">
-                    <div className="w-24 h-24 bg-emerald-50 rounded-4xl flex items-center justify-center text-emerald-500 mx-auto mb-8">
-                        <CheckCircle className="w-12 h-12" />
+            <div className="w-full h-screen flex items-center justify-center bg-slate-50 p-4 sm:p-6">
+                <div className="max-w-md w-full bg-white rounded-3xl shadow-2xl p-6 text-center animate-in zoom-in-95 duration-300 sm:p-12 sm:rounded-[3rem]">
+                    <div className="w-16 h-16 bg-emerald-50 rounded-3xl flex items-center justify-center text-emerald-500 mx-auto mb-6 sm:h-24 sm:w-24 sm:rounded-4xl sm:mb-8">
+                        <CheckCircle className="h-8 w-8 sm:h-12 sm:w-12" />
                     </div>
-                    <h2 className="text-3xl font-black text-slate-900 mb-3 italic">¡Transferencia Exitosa!</h2>
-                    <p className="text-slate-500 mb-10 font-medium">El dinero ha sido enviado correctamente.</p>
-                    <button onClick={onBack} className="w-full bg-blue-600 text-white py-5 rounded-2xl font-black shadow-xl shadow-blue-200 hover:scale-[1.02] active:scale-95 transition-all">
+                    <h2 className="text-2xl font-black text-slate-900 mb-3 sm:text-3xl italic">¡Transferencia Exitosa!</h2>
+                    <p className="text-slate-500 mb-8 font-medium sm:mb-10">El dinero ha sido enviado correctamente.</p>
+                    <button onClick={onBack} className="w-full bg-blue-600 text-white py-4 rounded-2xl font-black shadow-xl shadow-blue-200 hover:scale-[1.02] active:scale-95 transition-all sm:py-5">
                         Volver al Inicio
                     </button>
                 </div>
@@ -147,39 +155,39 @@ const Transfers: React.FC<TransfersProps> = ({ onBack }) => {
 
     return (
         <div className="w-full h-screen flex flex-col bg-slate-50 overflow-hidden">
-            <div className="p-8 flex items-center justify-between border-b border-slate-200 bg-white/80 backdrop-blur-md sticky top-0 z-10">
+            <div className="sticky top-0 z-10 flex flex-col gap-4 border-b border-slate-200 bg-white/80 p-4 backdrop-blur-md sm:flex-row sm:items-center sm:justify-between sm:p-6 lg:p-8">
                 <div className="flex items-center gap-4">
-                    <button onClick={onBack} className="p-3 hover:bg-slate-100 rounded-xl transition-all">
-                        <ArrowLeft className="w-6 h-6 text-slate-600" />
+                    <button onClick={onBack} className="p-2.5 hover:bg-slate-100 rounded-xl transition-all sm:p-3">
+                        <ArrowLeft className="h-5 w-5 text-slate-600 sm:h-6 sm:w-6" />
                     </button>
-                    <h1 className="text-2xl font-black text-slate-900 italic uppercase tracking-tighter">Enviar Dinero</h1>
+                    <h1 className="text-xl font-black text-slate-900 sm:text-2xl italic uppercase tracking-tighter">Enviar Dinero</h1>
                 </div>
                 <button 
                     onClick={() => setShowLinkModal(true)}
-                    className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-600 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-emerald-600 hover:text-white transition-all shadow-sm"
+                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-50 px-4 py-3 text-xs font-black uppercase tracking-widest text-emerald-600 shadow-sm transition-all hover:bg-emerald-600 hover:text-white sm:w-auto sm:py-2"
                 >
                     <UserPlus className="w-4 h-4" />
                     Vincular Nuevo
                 </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-8">
-                <div className="max-w-xl mx-auto py-10">
+            <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+                <div className="max-w-xl mx-auto py-4 sm:py-8 lg:py-10">
                     {error && (
-                        <div className="mb-8 p-5 bg-red-50 border-2 border-red-100 text-red-600 rounded-3xl flex items-center gap-4 animate-in slide-in-from-top-4">
-                            <AlertCircle className="w-6 h-6 shrink-0" />
+                        <div className="mb-6 flex items-center gap-3 rounded-2xl border-2 border-red-100 bg-red-50 p-4 text-red-600 animate-in slide-in-from-top-4 sm:mb-8 sm:gap-4 sm:rounded-3xl sm:p-5">
+                            <AlertCircle className="h-5 w-5 shrink-0 sm:h-6 sm:w-6" />
                             <p className="text-sm font-black italic">{error}</p>
                         </div>
                     )}
 
-                    <form onSubmit={openConfirmation} className="space-y-8 bg-white p-10 rounded-[3rem] shadow-xl border border-slate-100">
+                    <form onSubmit={openConfirmation} className="space-y-6 rounded-3xl border border-slate-100 bg-white p-5 shadow-xl sm:space-y-8 sm:p-8 lg:p-10 lg:rounded-[3rem]">
                         {/* From Account */}
                         <div>
                             <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 ml-4">Origen de fondos</label>
                             <div className="relative">
-                                <Wallet className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-blue-600" />
+                                <Wallet className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-blue-600 sm:left-6" />
                                 <select 
-                                    className="w-full pl-14 pr-12 py-5 bg-slate-50 border-2 border-slate-50 rounded-2xl focus:border-blue-600 focus:bg-white outline-none transition-all font-black text-slate-900 appearance-none cursor-pointer"
+                                    className="w-full appearance-none rounded-2xl border-2 border-slate-50 bg-slate-50 py-4 pl-12 pr-10 text-sm font-black text-slate-900 outline-none transition-all focus:border-blue-600 focus:bg-white sm:py-5 sm:pl-14 sm:pr-12"
                                     value={fromAccount}
                                     onChange={e => setFromAccount(e.target.value)}
                                     required
@@ -190,76 +198,46 @@ const Transfers: React.FC<TransfersProps> = ({ onBack }) => {
                                         </option>
                                     ))}
                                 </select>
-                                <ChevronDown className="absolute right-6 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" />
+                                <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400 sm:right-6" />
                             </div>
                         </div>
 
                         {/* To Account */}
                         <div className="relative">
-                            <div className="flex items-center justify-between mb-3 px-4">
+                            <div className="mb-3 flex items-center justify-between gap-3 px-2 sm:px-4">
                                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Cuenta destino</label>
                                 <button 
                                     type="button"
-                                    onClick={() => setShowSelection(!showSelection)}
+                                    onClick={() => setShowLinkedAccountsModal(true)}
                                     className="text-[10px] font-black text-blue-600 uppercase tracking-widest hover:underline flex items-center gap-1"
                                 >
                                     <Users className="w-3 h-3" />
-                                    {showSelection ? 'Escribir número' : 'Mis vinculados'}
+                                    Mis vinculados
                                 </button>
                             </div>
-                            {showSelection ? (
-                                <div className="space-y-2">
-                                    {externalAccounts.length === 0 ? (
-                                        <p className="text-center py-4 bg-slate-50 rounded-2xl text-xs font-bold text-slate-400 italic">No tienes cuentas vinculadas.</p>
-                                    ) : (
-                                        externalAccounts.map(ext => (
-                                            <button
-                                                key={ext.id}
-                                                type="button"
-                                                onClick={() => {
-                                                    setToAccount(ext.accountNumber);
-                                                    setShowSelection(false);
-                                                }}
-                                                className="w-full p-4 bg-slate-50 hover:bg-blue-50 border-2 border-transparent hover:border-blue-100 rounded-2xl transition-all flex items-center justify-between group"
-                                            >
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-slate-400 group-hover:text-blue-600 shadow-sm">
-                                                        <Landmark className="w-5 h-5" />
-                                                    </div>
-                                                    <div className="text-left">
-                                                        <p className="font-black text-slate-900 text-sm">{ext.holderName}</p>
-                                                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{ext.bankName} • {formatAccountNumber(ext.accountNumber)}</p>
-                                                    </div>
-                                                </div>
-                                            </button>
-                                        ))
-                                    )}
-                                </div>
-                            ) : (
-                                <input 
-                                    type="text"
-                                    placeholder="Número de 16 dígitos"
-                                    className="w-full px-8 py-5 bg-slate-50 border-2 border-slate-50 rounded-2xl focus:border-blue-600 focus:bg-white outline-none transition-all font-mono font-bold text-lg tracking-widest text-blue-700"
-                                    value={toAccount}
-                                    onChange={e => {
-                                        const val = e.target.value.replace(/\D/g, '').slice(0, 16);
-                                        setToAccount(val);
-                                    }}
-                                    required
-                                />
-                            )}
+                            <input 
+                                type="text"
+                                placeholder="Número de 16 dígitos"
+                                className="w-full rounded-2xl border-2 border-slate-50 bg-slate-50 px-5 py-4 font-mono text-base font-bold tracking-wide text-blue-700 outline-none transition-all focus:border-blue-600 focus:bg-white sm:px-8 sm:py-5 sm:text-lg sm:tracking-widest"
+                                value={toAccount}
+                                onChange={e => {
+                                    const val = e.target.value.replace(/\D/g, '').slice(0, 16);
+                                    setToAccount(val);
+                                }}
+                                required
+                            />
                         </div>
 
                         {/* Amount */}
                         <div>
                             <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 ml-4">Monto a enviar</label>
                             <div className="relative">
-                                <span className="absolute left-8 top-1/2 -translate-y-1/2 text-2xl font-black text-slate-300">$</span>
+                                <span className="absolute left-5 top-1/2 -translate-y-1/2 text-xl font-black text-slate-300 sm:left-8 sm:text-2xl">$</span>
                                 <input 
                                     type="number"
                                     step="0.01"
                                     placeholder="0.00"
-                                    className="w-full pl-14 pr-8 py-7 bg-slate-50 border-2 border-slate-50 rounded-4xl focus:border-blue-600 focus:bg-white outline-none transition-all font-black text-5xl text-blue-600 tracking-tighter"
+                                    className="w-full rounded-3xl border-2 border-slate-50 bg-slate-50 py-5 pl-10 pr-5 text-3xl font-black tracking-tight text-blue-600 outline-none transition-all focus:border-blue-600 focus:bg-white sm:rounded-4xl sm:py-7 sm:pl-14 sm:pr-8 sm:text-5xl sm:tracking-tighter"
                                     value={amount}
                                     onChange={e => setAmount(e.target.value)}
                                     required
@@ -270,9 +248,9 @@ const Transfers: React.FC<TransfersProps> = ({ onBack }) => {
                         <button 
                             type="submit"
                             disabled={loading || !toAccount || !amount}
-                            className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-slate-200 disabled:text-slate-400 text-white rounded-4xl py-6 transition-all shadow-2xl shadow-blue-200 text-lg font-black flex items-center justify-center gap-4 active:scale-[0.98] mt-10"
+                            className="mt-8 flex w-full items-center justify-center gap-3 rounded-3xl bg-blue-600 py-4 text-base font-black text-white shadow-2xl shadow-blue-200 transition-all hover:bg-blue-700 active:scale-[0.98] disabled:bg-slate-200 disabled:text-slate-400 sm:mt-10 sm:gap-4 sm:rounded-4xl sm:py-6 sm:text-lg"
                         >
-                            <Send className="w-6 h-6" />
+                            <Send className="h-5 w-5 sm:h-6 sm:w-6" />
                             Revisar Transferencia
                         </button>
                     </form>
@@ -280,16 +258,16 @@ const Transfers: React.FC<TransfersProps> = ({ onBack }) => {
             </div>
 
             {showConfirmation && (
-                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-60 flex items-center justify-center p-6 animate-in fade-in duration-200">
-                    <div className="w-full max-w-2xl rounded-[3rem] bg-white p-10 shadow-2xl animate-in zoom-in-95 duration-300">
-                        <div className="mb-8 flex items-start justify-between gap-6">
+                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-60 flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-200">
+                    <div className="max-h-[calc(100vh-2rem)] w-full max-w-2xl overflow-y-auto rounded-3xl bg-white p-5 shadow-2xl animate-in zoom-in-95 duration-300 sm:p-8 lg:p-10 lg:rounded-[3rem]">
+                        <div className="mb-6 flex items-start justify-between gap-4 sm:mb-8 sm:gap-6">
                             <div className="flex items-center gap-4">
-                                <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-blue-50 text-blue-600">
-                                    <ShieldCheck className="h-8 w-8" />
+                                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 sm:h-16 sm:w-16 sm:rounded-3xl">
+                                    <ShieldCheck className="h-6 w-6 sm:h-8 sm:w-8" />
                                 </div>
                                 <div>
                                     <p className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-600">Confirmación segura</p>
-                                    <h2 className="mt-2 text-3xl font-black italic text-slate-900">Revisa antes de enviar</h2>
+                                    <h2 className="mt-2 text-2xl font-black text-slate-900 sm:text-3xl italic">Revisa antes de enviar</h2>
                                     <p className="mt-2 text-sm font-medium text-slate-400">Verifica los datos de la operación antes de ejecutarla.</p>
                                 </div>
                             </div>
@@ -304,32 +282,32 @@ const Transfers: React.FC<TransfersProps> = ({ onBack }) => {
                             </button>
                         </div>
 
-                        <div className="mb-8 rounded-[2rem] border border-blue-100 bg-blue-50/40 px-8 py-7">
+                        <div className="mb-6 rounded-3xl border border-blue-100 bg-blue-50/40 px-5 py-5 sm:mb-8 sm:px-8 sm:py-7 lg:rounded-[2rem]">
                             <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Monto a transferir</p>
-                            <p className="mt-3 text-5xl font-black tracking-tighter text-blue-600">{formattedAmount}</p>
+                            <p className="mt-3 break-words text-3xl font-black tracking-tight text-blue-600 sm:text-5xl sm:tracking-tighter">{formattedAmount}</p>
                         </div>
 
                         <div className="grid gap-4 md:grid-cols-2">
-                            <div className="rounded-[2rem] border border-slate-100 bg-slate-50 p-6">
+                            <div className="rounded-3xl border border-slate-100 bg-slate-50 p-5 sm:p-6 lg:rounded-[2rem]">
                                 <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Cuenta origen</p>
                                 <p className="mt-4 text-lg font-black text-slate-900">
                                     {selectedSourceAccount?.type === 'SAVINGS' ? 'Cuenta de Ahorros' : 'Cuenta Corriente'}
                                 </p>
-                                <p className="mt-2 font-mono text-sm font-bold tracking-widest text-slate-500">
+                                <p className="mt-2 break-all font-mono text-xs font-bold tracking-widest text-slate-500 sm:text-sm">
                                     {formatAccountNumber(fromAccount)}
                                 </p>
                             </div>
 
-                            <div className="rounded-[2rem] border border-slate-100 bg-slate-50 p-6">
+                            <div className="rounded-3xl border border-slate-100 bg-slate-50 p-5 sm:p-6 lg:rounded-[2rem]">
                                 <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Cuenta destino</p>
                                 <p className="mt-4 text-lg font-black text-slate-900">
-                                    {selectedExternalAccount?.holderName || 'Cuenta destino digitada'}
+                                    {destinationLabel}
                                 </p>
-                                <p className="mt-2 font-mono text-sm font-bold tracking-widest text-slate-500">
+                                <p className="mt-2 break-all font-mono text-xs font-bold tracking-widest text-slate-500 sm:text-sm">
                                     {formatAccountNumber(toAccount)}
                                 </p>
                                 <p className="mt-2 text-[10px] font-black uppercase tracking-[0.3em] text-emerald-600">
-                                    {selectedExternalAccount?.bankName || 'Transferencia manual'}
+                                    {destinationContext}
                                 </p>
                             </div>
                         </div>
@@ -367,18 +345,134 @@ const Transfers: React.FC<TransfersProps> = ({ onBack }) => {
                 </div>
             )}
 
+            {showLinkedAccountsModal && (
+                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-60 flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-200">
+                    <div className="max-h-[calc(100vh-2rem)] w-full max-w-lg overflow-hidden rounded-3xl bg-white shadow-2xl animate-in zoom-in-95 duration-300 lg:rounded-[3rem]">
+                        <div className="flex items-start justify-between gap-4 border-b border-slate-100 p-6 sm:p-8">
+                            <div>
+                                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-600">Cuentas vinculadas</p>
+                                <h2 className="mt-2 text-2xl font-black text-slate-900 sm:text-3xl italic">Selecciona destino</h2>
+                                <p className="mt-2 text-sm font-medium text-slate-400">Elige una cuenta guardada para completar el destino.</p>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setShowLinkedAccountsModal(false)}
+                                className="rounded-2xl p-3 text-slate-400 transition-all hover:bg-slate-100 hover:text-slate-700"
+                                title="Cerrar selección"
+                            >
+                                <XCircle className="h-6 w-6" />
+                            </button>
+                        </div>
+
+                        <div className="max-h-[55vh] overflow-y-auto p-5 sm:p-6">
+                            {destinationOptions.length === 0 && externalAccounts.length === 0 ? (
+                                <div className="rounded-3xl border border-dashed border-slate-200 bg-slate-50 p-8 text-center">
+                                    <Landmark className="mx-auto mb-4 h-12 w-12 text-slate-200" />
+                                    <p className="font-black text-slate-400 italic">No hay cuentas disponibles para seleccionar.</p>
+                                    <p className="mt-2 text-sm font-medium text-slate-400">Puedes escribir una cuenta manualmente o vincular una nueva.</p>
+                                </div>
+                            ) : (
+                                <div className="space-y-6">
+                                    {destinationOptions.length > 0 && (
+                                        <section>
+                                            <p className="mb-3 px-2 text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">
+                                                Mis cuentas BancoDigital
+                                            </p>
+                                            <div className="space-y-3">
+                                                {destinationOptions.map(account => (
+                                                    <button
+                                                        key={account.id}
+                                                        type="button"
+                                                        onClick={() => {
+                                                            setToAccount(account.accountNumber);
+                                                            setShowLinkedAccountsModal(false);
+                                                        }}
+                                                        className={`w-full rounded-3xl border-2 p-4 text-left transition-all hover:border-blue-100 hover:bg-blue-50 ${
+                                                            toAccount === account.accountNumber ? 'border-blue-600 bg-blue-50' : 'border-slate-100 bg-slate-50'
+                                                        }`}
+                                                    >
+                                                        <div className="flex items-center gap-4">
+                                                            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white text-blue-600 shadow-sm">
+                                                                {account.type === 'SAVINGS' ? <Wallet className="h-6 w-6" /> : <Landmark className="h-6 w-6" />}
+                                                            </div>
+                                                            <div className="min-w-0 flex-1">
+                                                                <p className="truncate text-sm font-black text-slate-900">
+                                                                    {account.type === 'SAVINGS' ? 'Cuenta de Ahorros' : 'Cuenta Corriente'}
+                                                                </p>
+                                                                <p className="mt-1 break-all font-mono text-xs font-bold tracking-wider text-slate-500">
+                                                                    {formatAccountNumber(account.accountNumber)}
+                                                                </p>
+                                                                <p className="mt-1 text-[10px] font-black uppercase tracking-widest text-blue-600">
+                                                                    Saldo: ${account.balance.toLocaleString()}
+                                                                </p>
+                                                            </div>
+                                                            {toAccount === account.accountNumber && (
+                                                                <CheckCircle className="h-5 w-5 shrink-0 text-blue-600" />
+                                                            )}
+                                                        </div>
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </section>
+                                    )}
+
+                                    {externalAccounts.length > 0 && (
+                                        <section>
+                                            <p className="mb-3 px-2 text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">
+                                                Cuentas vinculadas
+                                            </p>
+                                            <div className="space-y-3">
+                                                {externalAccounts.map(ext => (
+                                                    <button
+                                                        key={ext.id}
+                                                        type="button"
+                                                        onClick={() => {
+                                                            setToAccount(ext.accountNumber);
+                                                            setShowLinkedAccountsModal(false);
+                                                        }}
+                                                        className={`w-full rounded-3xl border-2 p-4 text-left transition-all hover:border-blue-100 hover:bg-blue-50 ${
+                                                            toAccount === ext.accountNumber ? 'border-blue-600 bg-blue-50' : 'border-slate-100 bg-slate-50'
+                                                        }`}
+                                                    >
+                                                        <div className="flex items-center gap-4">
+                                                            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white text-slate-400 shadow-sm">
+                                                                <Landmark className="h-6 w-6" />
+                                                            </div>
+                                                            <div className="min-w-0 flex-1">
+                                                                <p className="truncate text-sm font-black text-slate-900">{ext.holderName}</p>
+                                                                <p className="mt-1 break-all font-mono text-xs font-bold tracking-wider text-slate-500">
+                                                                    {formatAccountNumber(ext.accountNumber)}
+                                                                </p>
+                                                                <p className="mt-1 text-[10px] font-black uppercase tracking-widest text-emerald-600">{ext.bankName}</p>
+                                                            </div>
+                                                            {toAccount === ext.accountNumber && (
+                                                                <CheckCircle className="h-5 w-5 shrink-0 text-blue-600" />
+                                                            )}
+                                                        </div>
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </section>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Link Modal */}
             {showLinkModal && (
-                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-60 flex items-center justify-center p-6 animate-in fade-in duration-200">
-                    <div className="bg-white w-full max-w-md rounded-[3rem] p-10 shadow-2xl animate-in zoom-in-95 duration-300">
+                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-60 flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-200">
+                    <div className="max-h-[calc(100vh-2rem)] w-full max-w-md overflow-y-auto rounded-3xl bg-white p-6 shadow-2xl animate-in zoom-in-95 duration-300 sm:p-10 lg:rounded-[3rem]">
                         <div className="text-center mb-8">
-                            <div className="w-20 h-20 bg-emerald-50 rounded-4xl flex items-center justify-center text-emerald-600 mx-auto mb-4">
-                                <Globe className="w-10 h-10" />
+                            <div className="w-16 h-16 bg-emerald-50 rounded-3xl flex items-center justify-center text-emerald-600 mx-auto mb-4 sm:h-20 sm:w-20 sm:rounded-4xl">
+                                <Globe className="h-8 w-8 sm:h-10 sm:w-10" />
                             </div>
-                            <h3 className="text-3xl font-black text-slate-900 italic">Vincular Banco</h3>
+                            <h3 className="text-2xl font-black text-slate-900 sm:text-3xl italic">Vincular Banco</h3>
                             <p className="text-slate-400 font-medium mt-1">Añade un favorito para transferir</p>
                         </div>
-                        <div className="space-y-4 mb-10">
+                        <div className="space-y-4 mb-8 sm:mb-10">
                             <input 
                                 placeholder="Nombre Entidad (Bancolombia, etc.)"
                                 className="w-full p-5 bg-slate-50 border-2 border-slate-50 rounded-2xl focus:border-emerald-500 outline-none font-bold italic"
@@ -401,7 +495,7 @@ const Transfers: React.FC<TransfersProps> = ({ onBack }) => {
                                 onChange={e => setLinkData({...linkData, holderName: e.target.value})}
                             />
                         </div>
-                        <div className="flex gap-4">
+                        <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
                             <button onClick={() => setShowLinkModal(false)} className="flex-1 py-5 text-slate-400 font-black hover:bg-slate-50 rounded-3xl transition-all">Cancelar</button>
                             <button onClick={handleLinkBank} className="flex-2 bg-emerald-600 text-white py-5 rounded-3xl font-black shadow-xl shadow-emerald-200 transition-all active:scale-95">Vincular Ahora</button>
                         </div>
