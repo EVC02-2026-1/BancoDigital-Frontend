@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { ArrowLeft, KeyRound, CheckCircle } from 'lucide-react';
-import axios from 'axios';
 import api from '../api/api';
 
 interface ResetPasswordProps {
@@ -27,28 +26,24 @@ const ResetPassword: React.FC<ResetPasswordProps> = ({ token, onBack }) => {
         try {
             await api.post('/auth/reset-password', { token, newPassword });
             setSubmitted(true);
-        } catch (err: unknown) {
+        } catch (err: any) {
             console.error(err);
-            if (axios.isAxiosError<string>(err)) {
-                setError(err.response?.data || 'Ha ocurrido un error al cambiar la contraseña. El enlace puede haber expirado.');
-            } else {
-                setError('Ha ocurrido un error al cambiar la contraseña. El enlace puede haber expirado.');
-            }
+            setError(err.response?.data || 'Ha ocurrido un error al cambiar la contraseña. El enlace puede haber expirado.');
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <div className="w-screen min-h-screen flex items-center justify-center bg-slate-50 p-4 sm:p-6">
-            <div className="max-w-md w-full bg-white rounded-3xl shadow-xl p-6 sm:p-10">
+        <div className="w-screen h-screen flex items-center justify-center bg-slate-50 p-6">
+            <div className="max-w-md w-full bg-white rounded-3xl shadow-xl p-10">
                 {!submitted ? (
                     <>
                         <div className="text-center mb-8">
                             <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
                                 <KeyRound className="w-8 h-8" />
                             </div>
-                            <h2 className="text-2xl sm:text-3xl font-bold text-slate-900">Nueva contraseña</h2>
+                            <h2 className="text-3xl font-bold text-slate-900">Nueva contraseña</h2>
                             <p className="text-slate-500 mt-2">Crea una nueva clave de acceso para tu cuenta.</p>
                         </div>
 
@@ -101,9 +96,9 @@ const ResetPassword: React.FC<ResetPasswordProps> = ({ token, onBack }) => {
                         </form>
                     </>
                 ) : (
-                    <div className="text-center py-4 sm:py-8">
-                        <CheckCircle className="w-16 h-16 sm:w-20 sm:h-20 text-green-500 mx-auto mb-6" />
-                        <h2 className="text-2xl sm:text-3xl font-bold text-slate-900">¡Actualizada!</h2>
+                    <div className="text-center py-8">
+                        <CheckCircle className="w-20 h-20 text-green-500 mx-auto mb-6" />
+                        <h2 className="text-3xl font-bold text-slate-900">¡Actualizada!</h2>
                         <p className="text-slate-500 mt-4 mb-8">
                             Tu contraseña ha sido actualizada con éxito.
                         </p>

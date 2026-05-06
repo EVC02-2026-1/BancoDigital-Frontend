@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -7,93 +7,59 @@ import ResetPassword from './pages/ResetPassword';
 import VerifyIdentity from './pages/VerifyIdentity';
 import Transfers from './pages/Transfers';
 import Movements from './pages/Movements';
-import Profile from './pages/Profile';
 
-type View = 'LOGIN' | 'REGISTER' | 'FORGOT' | 'VERIFY' | 'DASHBOARD' | 'TRANSFERS' | 'MOVEMENTS' | 'RESET_PASSWORD' | 'PROFILE';
-
-interface AppUser {
-    name?: string;
-    email?: string;
-    verified?: boolean;
-    selfie?: string;
-}
-
-interface InitialAppState {
-    view: View;
-    currentUser?: AppUser;
-    resetToken: string;
-}
-
-const AUTH_USER_KEY = 'currentUser';
-
-const getStoredToken = (): string | null => localStorage.getItem('token') || sessionStorage.getItem('token');
-
-const getStoredUser = (): AppUser | undefined => {
-    const rawUser = localStorage.getItem(AUTH_USER_KEY) || sessionStorage.getItem(AUTH_USER_KEY);
-
-    if (!rawUser) {
-        return undefined;
-    }
-
-    try {
-        return JSON.parse(rawUser) as AppUser;
-    } catch {
-        localStorage.removeItem(AUTH_USER_KEY);
-        sessionStorage.removeItem(AUTH_USER_KEY);
-        return undefined;
-    }
-};
-
-const saveUserSession = (userData: AppUser): void => {
-    const targetStorage = localStorage.getItem('token') ? localStorage : sessionStorage;
-    targetStorage.setItem(AUTH_USER_KEY, JSON.stringify(userData));
-};
-
-const clearSession = (): void => {
-    localStorage.removeItem('token');
-    sessionStorage.removeItem('token');
-    localStorage.removeItem(AUTH_USER_KEY);
-    sessionStorage.removeItem(AUTH_USER_KEY);
-};
-
-const getInitialAppState = (): InitialAppState => {
-    const path = window.location.pathname;
-
-    if (path.startsWith('/reset-password/')) {
-        const token = path.split('/reset-password/')[1];
-
-        if (token) {
-            return {
-                view: 'RESET_PASSWORD',
-                resetToken: token,
-            };
-        }
-    }
-
-    if (!getStoredToken()) {
-        return {
-            view: 'LOGIN',
-            resetToken: '',
-        };
-    }
-
-    const storedUser = getStoredUser();
-
-    return {
-        view: storedUser?.verified === false ? 'VERIFY' : 'DASHBOARD',
-        currentUser: storedUser,
-        resetToken: '',
-    };
-};
+type View = 'LOGIN' | 'REGISTER' | 'FORGOT' | 'VERIFY' | 'DASHBOARD' | 'TRANSFERS' | 'MOVEMENTS' | 'RESET_PASSWORD';
 
 const App = (): React.ReactElement => {
-    const [initialState] = useState<InitialAppState>(() => getInitialAppState());
-    const [view, setView] = useState<View>(initialState.view);
-    const [currentUser, setCurrentUser] = useState<AppUser | undefined>(initialState.currentUser);
-    const [resetToken] = useState<string>(initialState.resetToken);
+    const [view, setView] = useState<View>('LOGIN');
+    const [currentUser, setCurrentUser] = useState<any>(null);
+    const [resetToken, setResetToken] = useState<string>('');
 
-    const handleLoginSuccess = (userData: AppUser) => {
-        saveUserSession(userData);
+    useEffect(() => {
+        // Simple routing by reading the pathname without a React Router
+        const path = window.location.pathname;
+        if (path.startsWith('/reset-password/')) {
+            const token = path.split('/reset-password/')[1];
+            if (token) {
+                setResetToken(token);
+                setView('RESET_PASSWORD');
+                return;
+            }
+        }
+
+        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+        if (token) {
+            // Check session
+        }
+    }, []);
+
+    // Lógica de Cierre de Sesión por Inactividad (15 minutos)
+    useEffect(() => {
+        if (!currentUser) return;
+
+        const INACTIVITY_LIMIT = 15 * 60 * 1000; // 15 minutos
+        let timeoutId: any;
+
+        const resetTimer = () => {
+            if (timeoutId) clearTimeout(timeoutId);
+            timeoutId = setTimeout(() => {
+                handleLogout();
+                alert('Su sesión ha expirado por inactividad por motivos de seguridad.');
+            }, INACTIVITY_LIMIT);
+        };
+
+        const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'];
+        events.forEach(event => document.addEventListener(event, resetTimer));
+
+        resetTimer();
+
+        return () => {
+            if (timeoutId) clearTimeout(timeoutId);
+            events.forEach(event => document.removeEventListener(event, resetTimer));
+        };
+    }, [currentUser]);
+
+    const handleLoginSuccess = (userData: any) => {
         setCurrentUser(userData);
         if (!userData.verified) {
             setView('VERIFY');
@@ -102,21 +68,20 @@ const App = (): React.ReactElement => {
         }
     };
 
-    const handleRegisterSuccess = (userData: AppUser) => {
-        saveUserSession(userData);
+    const handleRegisterSuccess = (userData: any) => {
         setCurrentUser(userData);
         setView('VERIFY'); // Always verify after registration as per "blocking" request
     };
 
-    const handleVerified = (updatedUser: AppUser) => {
-        saveUserSession(updatedUser);
+    const handleVerified = (updatedUser: any) => {
         setCurrentUser(updatedUser);
         setView('DASHBOARD');
     };
 
     const handleLogout = () => {
-        clearSession();
-        setCurrentUser(undefined);
+        localStorage.removeItem('token');
+        sessionStorage.removeItem('token');
+        setCurrentUser(null);
         setView('LOGIN');
     };
 
@@ -155,14 +120,6 @@ const App = (): React.ReactElement => {
             )}
             {view === 'MOVEMENTS' && (
                 <Movements onBack={() => setView('DASHBOARD')} />
-            )}
-            {view === 'PROFILE' && (
-                <Profile
-                    user={currentUser}
-                    onBack={() => setView('DASHBOARD')}
-                    onChangePassword={() => setView('FORGOT')}
-                    onLogout={handleLogout}
-                />
             )}
         </div>
     );
